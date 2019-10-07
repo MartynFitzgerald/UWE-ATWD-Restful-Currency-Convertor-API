@@ -11,18 +11,6 @@
 |  Description:  Creating a JSON object with the data inside our MYSQL Database
 |
 *===========================================================================*/
-
-$currenciesAPIKey = "313f82e98f94595c11df26da43b9835f";
-
-//Getting current currencies information from the API
-$currentCurrencies = json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
-
-//Getting contries information from the file stored locally.
-$countries = file_get_contents('./data/countries.xml'); 
-
-$currencies = $currentCurrencies["rates"];
-
-
 $currenciesAccepted = ["AUD", 
          "BRL", 
          "CAD", 
@@ -49,11 +37,37 @@ $currenciesAccepted = ["AUD",
          "ZAR"
 ];
 
+$currenciesAPIKey = "313f82e98f94595c11df26da43b9835f";
+
+//Getting current currencies information from the API
+$currentCurrencies = json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
+
+//Getting contries information from the file stored locally.
+$countries = simplexml_load_file('./data/countries.xml') or die("Error: Cannot create object");
+
+$currencies = $currentCurrencies["rates"];
+
+
+//header('Content-Type: text/xml');
+//echo $countries;
+
+//echo $countries->CcyTbl->CcyNtry[0]->CtryNm;
+
+$xpath = new DOMXPath($countries);
+
+foreach ($xpath->evaluate("//@CtryNm") as $idAttribute) {
+    echo $idAttribute->value;
+  }
+
 for ($i = 0; $i < sizeof($currenciesAccepted); $i++)
 {
-    $convertCurrency = $currencies[$currenciesAccepted[$i]] / $currencies["GBP"];
+    $timeStamp =  time();
+    $currencyRate = $currencies[$currenciesAccepted[$i]] / $currencies["GBP"];
+    $currencyCode = $currenciesAccepted[$i];
+    $currencyName = "";
+    $currencyLocations = "";
 
-    echo $currenciesAccepted[$i] ." - " . $convertCurrency . "</br>";   
+    //echo $currencyCode ." - " . $currencyRate . " - ". $timeStamp. "</br>";   
 
 }
 ?>
