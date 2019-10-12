@@ -11,32 +11,11 @@
 |  Description:  Creating a JSON object with the data inside our MYSQL Database
 |
 *===========================================================================*/
-$currenciesAccepted = ["AUD", 
-         "BRL", 
-         "CAD", 
-         "CHF",
-         "CNY",
-         "DKK",
-         "EUR",
-         "GBP",
-         "HKD",
-         "HUF",
-         "INR",
-         "JPY",
-         "MXN",
-         "MYR",
-         "NOK",
-         "NZD",
-         "PHP",
-         "RUB",
-         "SEK",
-         "SGD",
-         "THB",
-         "TRY",
-         "USD",
-         "ZAR"
-];
 
+//This array holds the predefined rates for the application. 
+$currenciesISOCodes = ["AUD","BRL","CAD","CHF","CNY","DKK","EUR","GBP","HKD","HUF","INR","JPY","MXN","MYR","NOK","NZD","PHP","RUB","SEK","SGD","THB","TRY","USD","ZAR"];
+
+// API key for the currencies, allows me to get live information.
 $currenciesAPIKey = "313f82e98f94595c11df26da43b9835f";
 
 //Getting current currencies information from the API
@@ -45,29 +24,20 @@ $currentCurrencies = json_decode(file_get_contents('http://data.fixer.io/api/lat
 //Getting contries information from the file stored locally.
 $countries = simplexml_load_file('./data/countries.xml') or die("Error: Cannot create object");
 
+//Setting the rates of all currency rates to the a varible.
 $currencies = $currentCurrencies["rates"];
 
-
-//header('Content-Type: text/xml');
-//echo $countries;
-
-//echo $countries->CcyTbl->CcyNtry[0]->CtryNm;
-
-$xpath = new DOMXPath($countries);
-
-foreach ($xpath->evaluate("//@CtryNm") as $idAttribute) {
-    echo $idAttribute->value;
-  }
-
-for ($i = 0; $i < sizeof($currenciesAccepted); $i++)
+//This loop cycles through the predefined rates.
+for ($i = 0; $i < sizeof($currenciesISOCodes); $i++)
 {
+
     $timeStamp =  time();
-    $currencyRate = $currencies[$currenciesAccepted[$i]] / $currencies["GBP"];
-    $currencyCode = $currenciesAccepted[$i];
-    $currencyName = "";
-    $currencyLocations = "";
+    $currencyRate = $currencies[$currenciesISOCodes[$i]] / $currencies["GBP"];
+    $currencyCode = $currenciesISOCodes[$i];
+    $currencyName = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currenciesISOCodes[$i] . "']/CcyNm");
+    $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currenciesISOCodes[$i] . "']/CtryNm");
+    $currencyLocationsFormatted = ucwords(strtolower(implode(", ",$currencyLocations)));
 
-    //echo $currencyCode ." - " . $currencyRate . " - ". $timeStamp. "</br>";   
-
+    echo $timeStamp ." - " . $currencyRate . " - " . $currencyCode . " - " . $currencyName[0] . " - " . $currencyLocationsFormatted . "</br>";  
 }
 ?>
