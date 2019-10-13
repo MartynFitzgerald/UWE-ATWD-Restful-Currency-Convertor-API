@@ -80,6 +80,43 @@ if (!file_exists($xmlFileName))
     $dom->save($xmlFileName);
 
 }
+if ((isset ($_REQUEST["from"])) && (isset ($_REQUEST["to"]))  && (!isset ($_REQUEST["amnt"]))  && (!isset ($_REQUEST["format"])))
+{
+    $countryFrom = $_REQUEST["from"];
+    $countryTo = $_REQUEST["to"];
+    $amount = $_REQUEST["amnt"];
+    $format = $_REQUEST["format"];
 
+    echo $countryFrom ." - " . $countryTo . " - " . $amount . " - " . $format . "</br>";  
+}
+else if ((isset ($_REQUEST["cur"])) && (isset ($_REQUEST["action"])))
+{
+    $cur = $_REQUEST["cur"];
+    $action = $_REQUEST["action"];
+
+    echo $cur ." - " . $action . "</br>";  
+
+    if ($action === "post")
+    {
+
+    }
+    else if ($action === "put")
+    {
+
+    }
+    else if ($action === "del")
+    {
+
+    }
+    else
+    {
+        //wrong action given...
+    }
+}
+else
+{
+    echo "Parameter not recognized </br>";  
+    
+} 
 
 ?>
