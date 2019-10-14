@@ -11,6 +11,7 @@
 |  Description:  Creating a JSON object with the data inside our MYSQL Database
 |
 *===========================================================================*/
+include 'functions.php';
 
 //This array holds the predefined rates for the application. 
 $currenciesISOCodes = ["AUD","BRL","CAD","CHF","CNY","DKK","EUR","GBP","HKD","HUF","INR","JPY","MXN","MYR","NOK","NZD","PHP","RUB","SEK","SGD","THB","TRY","USD","ZAR"];
@@ -19,12 +20,14 @@ $baseCurrency = "GBP";
 
 $xmlFileName = 'rates.xml';
 
-//If no file has been created
-if (!file_exists($xmlFileName))
-{
-    // API key for the currencies, allows me to get live information.
-    $currenciesAPIKey = "313f82e98f94595c11df26da43b9835f";
+// API key for the currencies, allows me to get live information.
+$currenciesAPIKey = "313f82e98f94595c11df26da43b9835f";
 
+date_default_timezone_set("Europe/London");
+
+//If no file has been created
+if (!file_exists('./data/'. $xmlFileName))
+{
     //Getting current currencies information from the API
     $currentCurrencies = json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
 
@@ -34,52 +37,34 @@ if (!file_exists($xmlFileName))
     //Setting the rates of all currency rates to the a varible.
     $currencies = $currentCurrencies["rates"];
 
-    //Create XML Document
-    $dom = new DOMDocument("1.0");
-
-    //Creating "currencies" Node
-    $root = $dom->createElement("currencies");
-
-    //Adding attribute "base" to "currencies" Node
-    $root->setAttributeNode(new DOMAttr("base", $baseCurrency));
-
-    //Setting root to the XML document
-    $dom->appendChild($root);
-
-    //This loop cycles through the predefined rates.
-    for ($i = 0; $i < sizeof($currenciesISOCodes); $i++)
-    {
-        //Creating timestamp for when created in XML document
-        $timeStamp =  time();
-        //Calculating the rate, since the API base currency isnt GBP
-        $currencyRate = $currencies[$currenciesISOCodes[$i]] / $currencies[$baseCurrency];
-        //Setting the ISO code for this currency
-        $currencyCode = $currenciesISOCodes[$i];
-        //Getting the currency name from the XML data file
-        $currencyName = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currenciesISOCodes[$i] . "']/CcyNm");
-        //Getting the currency locations from the XML data file
-        $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currenciesISOCodes[$i] . "']/CtryNm");
-        //Formatted the locations to put them into a string and also capitalization the first letter within a word
-        $currencyLocationsFormatted = ucwords(strtolower(implode(", ",$currencyLocations)));
-        
-        //Print this out to the screen now
-        //echo $timeStamp ." - " . $currencyRate . " - " . $currencyCode . " - " . $currencyName[0] . " - " . $currencyLocationsFormatted . "</br>";  
-
-        $itemNode = $dom->createElement("currency");
-        $itemNode->appendChild($dom->createElement("at", $timeStamp));
-        $itemNode->appendChild($dom->createElement("rate", $currencyRate));
-        $currNode = $itemNode->appendChild($dom->createElement("curr"));
-            $currNode->appendChild($dom->createElement("code", $currencyCode));
-            $currNode->appendChild($dom->createElement("name", $currencyName[0]));
-            $currNode->appendChild($dom->createElement("loc", $currencyLocationsFormatted));
-        $itemNode->appendChild($currNode);
-        $root->appendChild($itemNode);
-    }
-
-    //Saving XML document to the filename defined above
-    $dom->save($xmlFileName);
-
+    initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies);
 }
+else
+{
+    //Getting rates information from the file stored locally.
+    $rates = simplexml_load_file('./data/'. $xmlFileName) or die("Error: Cannot create object");
+    //Getting the currency name from the XML data file
+    $ratesTimeStamp = $rates->xpath("/currencies/currency/at");
+    $formatTimeStamp = date('d F Y H:i',  substr($ratesTimeStamp[0], 0, 10));
+
+    if($ratesTimeStamp <= strtotime("-2 hours"))
+    {
+        //Update here 
+        echo "Not within 2 Hours - " . $formatTimeStamp . "</br>";
+        //Rename XML file to inlcude date
+        rename("./data/rates.xml", "./data/rates" . $ratesTimeStamp[0] . ".xml");
+        
+        //Getting current currencies information from the API
+        $currentCurrencies = json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
+
+        //Getting contries information from the file stored locally.
+        $countries = simplexml_load_file('./data/countries.xml') or die("Error: Cannot create object");
+        
+        initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies);
+    }   
+}
+
+
 if ((isset ($_REQUEST["from"])) && (isset ($_REQUEST["to"]))  && (!isset ($_REQUEST["amnt"]))  && (!isset ($_REQUEST["format"])))
 {
     $countryFrom = $_REQUEST["from"];
