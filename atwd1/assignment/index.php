@@ -28,16 +28,8 @@ date_default_timezone_set("Europe/London");
 //If no file has been created
 if (!file_exists('./data/'. $xmlFileName))
 {
-    //Getting current currencies information from the API
-    $currentCurrencies = json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
-    
-    //Setting the rates of all currency rates to the a varible.
-    $currencies = $currentCurrencies["rates"];
-
-    //Getting contries information from the file stored locally.
-    $countries = simplexml_load_file('./data/countries.xml') or die("Error: Cannot create object");
-
-    initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies);
+    //Request data from APIs and create rates.xml file
+    requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey);
 }
 else
 {
@@ -51,19 +43,12 @@ else
     {
         //Update here 
         echo "Not within 2 Hours - " . $formatTimeStamp . "</br>";
+        
         //Rename XML file to inlcude date
         rename("./data/rates.xml", "./data/rates" . $ratesTimeStamp[0] . ".xml");
         
-        //Getting current currencies information from the API
-        $currentCurrencies = json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
-        
-        //Setting the rates of all currency rates to the a varible.
-        $currencies = $currentCurrencies["rates"];
-
-        //Getting contries information from the file stored locally.
-        $countries = simplexml_load_file('./data/countries.xml') or die("Error: Cannot create object");
-        
-        initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies);
+         //Request data from APIs and create rates.xml file
+        requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey);
     }   
 }
 
