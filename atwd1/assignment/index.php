@@ -30,12 +30,12 @@ if (!file_exists('./data/'. $xmlFileName))
 {
     //Getting current currencies information from the API
     $currentCurrencies = json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
+    
+    //Setting the rates of all currency rates to the a varible.
+    $currencies = $currentCurrencies["rates"];
 
     //Getting contries information from the file stored locally.
     $countries = simplexml_load_file('./data/countries.xml') or die("Error: Cannot create object");
-
-    //Setting the rates of all currency rates to the a varible.
-    $currencies = $currentCurrencies["rates"];
 
     initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies);
 }
@@ -56,6 +56,9 @@ else
         
         //Getting current currencies information from the API
         $currentCurrencies = json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
+        
+        //Setting the rates of all currency rates to the a varible.
+        $currencies = $currentCurrencies["rates"];
 
         //Getting contries information from the file stored locally.
         $countries = simplexml_load_file('./data/countries.xml') or die("Error: Cannot create object");
