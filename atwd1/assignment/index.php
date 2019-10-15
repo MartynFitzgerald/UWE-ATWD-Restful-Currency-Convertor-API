@@ -15,9 +15,11 @@ include 'functions.php';
 
 //This array holds the predefined rates for the application. 
 $currenciesISOCodes = ["AUD","BRL","CAD","CHF","CNY","DKK","EUR","GBP","HKD","HUF","INR","JPY","MXN","MYR","NOK","NZD","PHP","RUB","SEK","SGD","THB","TRY","USD","ZAR"];
-
+//Defining get parameters 
+$getParameters = ["from","to","amnt","format"];
+//Base currency for the rates stored.
 $baseCurrency = "GBP";
-
+//File name for the rates stored.
 $xmlFileName = 'rates.xml';
 
 // API key for the currencies, allows me to get live information.
@@ -35,6 +37,7 @@ else
 {
     //Getting rates information from the file stored locally.
     $rates = simplexml_load_file('./data/'. $xmlFileName) or die("Error: Cannot create object");
+    
     //Getting the currency name from the XML data file
     $ratesTimeStamp = $rates->xpath("/currencies/currency/at");
     $formatTimeStamp = date('d F Y H:i',  substr($ratesTimeStamp[0], 0, 10));
@@ -42,8 +45,8 @@ else
     if($ratesTimeStamp <= strtotime("-2 hours"))
     {
         //Update here 
-        echo "Not within 2 Hours - " . $formatTimeStamp . "</br>";
-        
+        //echo "Not within 2 Hours - " . $formatTimeStamp . "</br>";
+
         //Rename XML file to inlcude date
         rename("./data/rates.xml", "./data/rates" . $ratesTimeStamp[0] . ".xml");
         
@@ -51,9 +54,38 @@ else
         requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey);
     }   
 }
+//Defining the amount on both arrays
+$amountOfGetKeys = sizeof(array_keys($_REQUEST)) - 1;
+$amountOfGetParameters = sizeof($getParameters) - 1;
 
+if ($amountOfGetKeys == $amountOfGetParameters)
+{
+    for($i = 0; $i < $amountOfGetKeys; $i++) {
+        for($j = 0; $j < $amountOfGetParameters; $j++) {
+            if (array_keys($_REQUEST)[$i] == $getParameters[$j])
+            {
+                break;
+            }
+            else
+            {
+                if (($i < $amountOfGetKeys) && ($j < $amountOfGetParameters))
+                {
+                    echo "Parameter not recognized </br>";  
+                }
+            }
+        }
+    }
+}
+else if ($amountOfGetKeys <= $amountOfGetParameters)
+{
+    echo "Parameter not recognized </br>";  
+}
+else if ($amountOfGetKeys >= $amountOfGetParameters)
+{
+    echo "Required parameter is missing </br>";  
+}
 
-if ((isset ($_REQUEST["from"])) && (isset ($_REQUEST["to"]))  && (!isset ($_REQUEST["amnt"]))  && (!isset ($_REQUEST["format"])))
+if ((isset($_REQUEST["from"])) && (isset($_REQUEST["to"]))  && (isset($_REQUEST["amnt"]))  && (isset($_REQUEST["format"])))
 {
     $countryFrom = $_REQUEST["from"];
     $countryTo = $_REQUEST["to"];
@@ -62,34 +94,9 @@ if ((isset ($_REQUEST["from"])) && (isset ($_REQUEST["to"]))  && (!isset ($_REQU
 
     echo $countryFrom ." - " . $countryTo . " - " . $amount . " - " . $format . "</br>";  
 }
-else if ((isset ($_REQUEST["cur"])) && (isset ($_REQUEST["action"])))
-{
-    $cur = $_REQUEST["cur"];
-    $action = $_REQUEST["action"];
-
-    echo $cur ." - " . $action . "</br>";  
-
-    if ($action === "post")
-    {
-
-    }
-    else if ($action === "put")
-    {
-
-    }
-    else if ($action === "del")
-    {
-
-    }
-    else
-    {
-        //wrong action given...
-    }
-}
 else
 {
-    echo "Parameter not recognized </br>";  
+    echo "Required parameter is missing </br>";  
     
 } 
-
 ?>
