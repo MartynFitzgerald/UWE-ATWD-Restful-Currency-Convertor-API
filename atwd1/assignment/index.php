@@ -63,8 +63,10 @@ checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefinedParamet
 
 if ((isset($_REQUEST["from"])) && (isset($_REQUEST["to"]))  && (isset($_REQUEST["amnt"]))  && (isset($_REQUEST["format"])))
 {
+    //Checking if the to and from values are a currency type recognized
     checkCurrencyCode($_REQUEST["from"]);
     checkCurrencyCode($_REQUEST["to"]);
+    //Checking if the amnt value is a decimal point
     checkAmountIsFloat();
     //Checking if the format request is either xml or json
     checkFormatGetValue();

@@ -79,14 +79,18 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
         //Print this out to the screen now
         //echo $timeStamp ." - " . $currencyRate . " - " . $currencyCode . " - " . $currencyName[0] . " - " . $currencyLocationsFormatted . "</br>";  
 
+        //Create main currency node for each currency pre-defined
         $itemNode = $dom->createElement("currency");
+        //Create few child nodes for to add the data to the currency node above
         $itemNode->appendChild($dom->createElement("at", $timeStamp));
         $itemNode->appendChild($dom->createElement("rate", $currencyRate));
         $currNode = $itemNode->appendChild($dom->createElement("curr"));
             $currNode->appendChild($dom->createElement("code", $currencyCode));
             $currNode->appendChild($dom->createElement("name", $currencyName[0]));
             $currNode->appendChild($dom->createElement("loc", $currencyLocationsFormatted));
+        //Attach the new child nodes to the main currency node 
         $itemNode->appendChild($currNode);
+        //Attach the main currency node to the main node in the XML document
         $root->appendChild($itemNode);
     }
 
@@ -95,18 +99,25 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
 }
 
 function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefinedParameters) {
+    //Check if there is the wrong amount of parameters
     if ($amountOfGetKeys == $amountOfGetParameters)
     {
+        //Cycle through all of the HTTP GET Request keys
         for($i = 0; $i < $amountOfGetKeys; $i++) {
+            //Cycle through all of the pre-defined expected parameters 
             for($j = 0; $j < $amountOfGetParameters; $j++) {
+                //Check if the HTTP GET Request key equals to the expected parameter
                 if (array_keys($_REQUEST)[$i] == $getPreDefinedParameters[$j])
                 {
+                    //If it does then break out of the first for loop to move on to the next HTTP GET Request key
                     break;
                 }
                 else
                 {
+                    //If not then check if it has cycled through all of the pre-definedexpected parameters 
                     if ($j >= $amountOfGetParameters - 1)
                     {
+                        //If it has then show a error since the paremeter is not expected
                         echo array_keys($_REQUEST)[$i] . " - Parameter not recognized </br>";  
                         //Terminate the current script 
                         exit();
