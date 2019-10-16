@@ -21,17 +21,28 @@ function displayXML($dom) {
     header('Content-Type: text/xml');
     echo $dom->saveXML();
 }
+//Get list of the contries that support all of the currencies. Also declaring the return to SimpleXMLElement in this function.
+function getCountries(): SimpleXMLElement{
+    //Getting contries information from the file stored locally.
+    $xml = simplexml_load_file('./data/countries.xml') or die("Error in service");
+    return $xml;
+}
+
+function getCurrencies($currenciesAPIKey) {
+    //Getting current currencies information from the API
+    return json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
+}
 
 function requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey) {
 
-    //Getting current currencies information from the API
-    $currentCurrencies = json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
+    //Call function to get current currencies information from the API
+    $currentCurrencies = getCurrencies($currenciesAPIKey);
     
     //Setting the rates of all currency rates to the a varible.
     $currencies = $currentCurrencies["rates"];
 
     //Getting contries information from the file stored locally.
-    $countries = simplexml_load_file('./data/countries.xml') or die("Error: Cannot create object");
+    $countries = getCountries();
 
     initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies);
 }
@@ -81,5 +92,72 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
 
     //Saving XML document to the filename defined above
     $dom->save('./data/'. $xmlFileName);
+}
+
+function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefinedParameters) {
+    if ($amountOfGetKeys == $amountOfGetParameters)
+    {
+        for($i = 0; $i < $amountOfGetKeys; $i++) {
+            for($j = 0; $j < $amountOfGetParameters; $j++) {
+                if (array_keys($_REQUEST)[$i] == $getPreDefinedParameters[$j])
+                {
+                    break;
+                }
+                else
+                {
+                    if ($j >= $amountOfGetParameters - 1)
+                    {
+                        echo array_keys($_REQUEST)[$i] . " - Parameter not recognized </br>";  
+                        //Terminate the current script 
+                        exit();
+                    }
+                }
+            }
+        }
+    }
+    else if ($amountOfGetKeys > $amountOfGetParameters)
+    {
+        echo "Parameter not recognized </br>";  
+        //Terminate the current script 
+        exit();
+    }
+    else if ($amountOfGetKeys < $amountOfGetParameters)
+    {
+        echo "Required parameter is missing </br>";  
+        //Terminate the current script 
+        exit();
+    }
+}
+
+function checkFormatGetValue() {
+    if (!($_REQUEST["format"] == "xml" || $_REQUEST["format"] == "json"))
+    {
+        echo "Format must be xml or json";  
+        //Terminate the current script 
+        exit();
+    }
+}
+
+function checkAmountIsFloat() {
+    if (!(is_numeric( $_REQUEST["amnt"] ) || floor( $_REQUEST["amnt"] ) != $_REQUEST["amnt"]))
+    {
+        echo "Format must be xml or json";  
+        //Terminate the current script 
+        exit();
+    }
+}
+
+function checkCurrencyCode($currencyCode) {
+    //Getting contries information from the file stored locally.
+    $countries = getCountries();
+    //Getting the currency code from the XML data file
+    $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='". $currencyCode ."']");
+    //If the Xpath returned false then show error
+    if (!$currencyLocations)
+    {
+        echo $currencyCode . " - Currency type not recognized";  
+        //Terminate the current script 
+        exit();
+    }
 }
 ?>

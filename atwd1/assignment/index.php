@@ -16,7 +16,7 @@ include 'functions.php';
 //This array holds the predefined rates for the application. 
 $currenciesISOCodes = ["AUD","BRL","CAD","CHF","CNY","DKK","EUR","GBP","HKD","HUF","INR","JPY","MXN","MYR","NOK","NZD","PHP","RUB","SEK","SGD","THB","TRY","USD","ZAR"];
 //Defining get parameters 
-$getParameters = ["from","to","amnt","format"];
+$getPreDefinedParameters = ["from","to","amnt","format"];
 //Base currency for the rates stored.
 $baseCurrency = "GBP";
 //File name for the rates stored.
@@ -54,39 +54,21 @@ else
         requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey);
     }   
 }
-//Defining the amount on both arrays
-$amountOfGetKeys = sizeof(array_keys($_REQUEST)) - 1;
-$amountOfGetParameters = sizeof($getParameters) - 1;
 
-if ($amountOfGetKeys == $amountOfGetParameters)
-{
-    for($i = 0; $i < $amountOfGetKeys; $i++) {
-        for($j = 0; $j < $amountOfGetParameters; $j++) {
-            if (array_keys($_REQUEST)[$i] == $getParameters[$j])
-            {
-                break;
-            }
-            else
-            {
-                if (($i < $amountOfGetKeys) && ($j < $amountOfGetParameters))
-                {
-                    echo "Parameter not recognized </br>";  
-                }
-            }
-        }
-    }
-}
-else if ($amountOfGetKeys <= $amountOfGetParameters)
-{
-    echo "Parameter not recognized </br>";  
-}
-else if ($amountOfGetKeys >= $amountOfGetParameters)
-{
-    echo "Required parameter is missing </br>";  
-}
+//Defining the amount on both arrays
+$amountOfGetKeys = sizeof(array_keys($_REQUEST));
+$amountOfGetParameters = sizeof($getPreDefinedParameters);
+//checks that all of the parameters given through the HTTP request
+checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefinedParameters);
 
 if ((isset($_REQUEST["from"])) && (isset($_REQUEST["to"]))  && (isset($_REQUEST["amnt"]))  && (isset($_REQUEST["format"])))
 {
+    checkCurrencyCode($_REQUEST["from"]);
+    checkCurrencyCode($_REQUEST["to"]);
+    checkAmountIsFloat();
+    //Checking if the format request is either xml or json
+    checkFormatGetValue();
+    
     $countryFrom = $_REQUEST["from"];
     $countryTo = $_REQUEST["to"];
     $amount = $_REQUEST["amnt"];
@@ -97,6 +79,7 @@ if ((isset($_REQUEST["from"])) && (isset($_REQUEST["to"]))  && (isset($_REQUEST[
 else
 {
     echo "Required parameter is missing </br>";  
-    
+    //Terminate the current script 
+    exit();
 } 
 ?>
