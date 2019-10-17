@@ -27,12 +27,29 @@ function getCountries(): SimpleXMLElement{
     $xml = simplexml_load_file('./data/countries.xml') or die("Error in service");
     return $xml;
 }
-
+//Get list of the currencies and their rates at current time.
 function getCurrencies($currenciesAPIKey) {
     //Getting current currencies information from the API
     return json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
 }
+//Get list of the errors.
+function getErrors(): SimpleXMLElement{
+    //Getting contries information from the file stored locally.
+    $xml = simplexml_load_file('./data/errors.xml') or die("Error in service");
+    return $xml;
+}
 
+//Get list of the errors.
+function searchForError($errorCode){
+    //Getting errors information from the file stored locally.
+    $errors = getErrors();
+
+    //Getting the error message from the XML data file
+    $errorMessage = $errors->xpath("/errors/error[code='" . $errorCode . "']/message");
+
+    echo $errorCode. " - " . $errorMessage[0] . "</br>"; 
+
+}
 function requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey) {
 
     //Call function to get current currencies information from the API
@@ -143,6 +160,7 @@ function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefin
 function checkFormatGetValue() {
     if (!($_REQUEST["format"] == "xml" || $_REQUEST["format"] == "json"))
     {
+        //searchForError(1400);
         echo "Format must be xml or json";  
         //Terminate the current script 
         exit();
