@@ -19,10 +19,76 @@ function displayJSON($json) {
 
 function displayXML($dom) {
     header('Content-Type: text/xml');
-    echo $dom->saveXML();
+    echo $dom->asXML();
 }
+
+function constructOutputArray($dataNode, $type) {
+
+    if($type === "error")
+    {
+        $errorNode = array("error"=>$dataNode);
+        $outputNode = array("conv"=>$errorNode);
+    }
+    else if($type === "conv")
+    {
+        $outputNode = array("conv"=>$dataNode);
+    }
+    else if($type === "action")
+    {
+        $outputNode = array("conv"=>$dataNode);
+    }
+    return $outputNode;
+}
+
+//function defination to convert array to xml
+//source: https://www.codexworld.com/convert-array-to-xml-in-php/
+function array_to_xml($array, &$xml_user_info) {
+    foreach($array as $key => $value) {
+        if(is_array($value)) {
+            if(!is_numeric($key)){
+                $subnode = $xml_user_info->addChild("$key");
+                array_to_xml($value, $subnode);
+            }else{
+                $subnode = $xml_user_info->addChild("item$key");
+                array_to_xml($value, $subnode);
+            }
+        }else {
+            $xml_user_info->addChild("$key",htmlspecialchars("$value"));
+        }
+    }
+}
+
+function convertArrayToFormatForOutput($outputNode) {
+
+    if ($_REQUEST["format"] == "json")
+    {
+        $outputJSON = json_encode($outputNode);
+        displayJSON($outputJSON);
+    }
+    else
+    {
+        //Default to xml if nothing is specified   
+        $firstNodeKey = array_keys($outputNode)[0];
+        $xml = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . "></" . $firstNodeKey . ">");
+        
+        array_to_xml($outputNode[$firstNodeKey],$xml);
+        displayXML($xml);
+    } 
+
+}
+
+function conductErrorMessage($errorCode){
+    $message = searchForError($errorCode);
+        
+    $dataArray = array("code"=>$errorCode, "msg"=>(string) $message);
+
+    $outputNode = constructOutputArray($dataArray, "error");
+
+    convertArrayToFormatForOutput($outputNode);
+}
+
 //Get list of the contries that support all of the currencies. Also declaring the return to SimpleXMLElement in this function.
-function getCountries(): SimpleXMLElement{
+function getCountries(){
     //Getting contries information from the file stored locally.
     $xml = simplexml_load_file('./data/countries.xml') or die("Error in service");
     return $xml;
@@ -32,14 +98,15 @@ function getCurrencies($currenciesAPIKey) {
     //Getting current currencies information from the API
     return json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
 }
+
 //Get list of the errors.
-function getErrors(): SimpleXMLElement{
-    //Getting contries information from the file stored locally.
+function getErrors(){
+    //Getting errors information from the file stored locally.
     $xml = simplexml_load_file('./data/errors.xml') or die("Error in service");
     return $xml;
 }
 
-//Get list of the errors.
+//Search list of the errors with the code to get the message.
 function searchForError($errorCode){
     //Getting errors information from the file stored locally.
     $errors = getErrors();
@@ -47,9 +114,9 @@ function searchForError($errorCode){
     //Getting the error message from the XML data file
     $errorMessage = $errors->xpath("/errors/error[code='" . $errorCode . "']/message");
 
-    echo $errorCode. " - " . $errorMessage[0] . "</br>"; 
-
+    return $errorMessage[0];
 }
+
 function requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey) {
 
     //Call function to get current currencies information from the API
@@ -134,8 +201,8 @@ function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefin
                     //If not then check if it has cycled through all of the pre-definedexpected parameters 
                     if ($j >= $amountOfGetParameters - 1)
                     {
-                        //If it has then show a error since the paremeter is not expected
-                        echo array_keys($_REQUEST)[$i] . " - Parameter not recognized </br>";  
+                        //Output error 1100 - Parameter not recognized
+                        conductErrorMessage(1100); 
                         //Terminate the current script 
                         exit();
                     }
@@ -145,13 +212,15 @@ function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefin
     }
     else if ($amountOfGetKeys > $amountOfGetParameters)
     {
-        echo "Parameter not recognized </br>";  
+        //Output error 1100 - Parameter not recognized
+        conductErrorMessage(1100); 
         //Terminate the current script 
         exit();
     }
     else if ($amountOfGetKeys < $amountOfGetParameters)
     {
-        echo "Required parameter is missing </br>";  
+        //Output error 1000 - Required parameter is missing
+        conductErrorMessage(1000); 
         //Terminate the current script 
         exit();
     }
@@ -160,8 +229,8 @@ function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefin
 function checkFormatGetValue() {
     if (!($_REQUEST["format"] == "xml" || $_REQUEST["format"] == "json"))
     {
-        //searchForError(1400);
-        echo "Format must be xml or json";  
+        //Output error 1400 - Format must be xml or json 
+        conductErrorMessage(1400);
         //Terminate the current script 
         exit();
     }
@@ -170,7 +239,8 @@ function checkFormatGetValue() {
 function checkAmountIsFloat() {
     if (!(is_numeric( $_REQUEST["amnt"] ) || floor( $_REQUEST["amnt"] ) != $_REQUEST["amnt"]))
     {
-        echo "Format must be xml or json";  
+        //Output error 1300 - Currency amount must be a decimal number 
+        conductErrorMessage(1300); 
         //Terminate the current script 
         exit();
     }
@@ -184,7 +254,9 @@ function checkCurrencyCode($currencyCode) {
     //If the Xpath returned false then show error
     if (!$currencyLocations)
     {
-        echo $currencyCode . " - Currency type not recognized";  
+        
+        //Output error 1200 - Currency type not recognized 
+        conductErrorMessage(1200);  
         //Terminate the current script 
         exit();
     }
