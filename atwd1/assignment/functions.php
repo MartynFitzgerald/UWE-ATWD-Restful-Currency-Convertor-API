@@ -96,6 +96,19 @@ function conductErrorMessage($errorCode, $message = null){
 
     convertArrayToFormatForOutput($outputNode);
 }
+//Get list of the rates.
+function getRates(){
+    //Getting rates information from the file stored locally. @ is suppress wearning so we can handle myself.
+    $xml = @simplexml_load_file('./data/rates.xml');
+    //Check if we don't have valid XML file
+    if ($xml === false)
+    {
+        //Send error message to user and then kill the service
+        conductErrorMessage(1500, "Error in service");
+        exit();
+    }
+    return $xml;
+}
 //Get list of the errors.
 function getErrors(){
     //Getting errors information from the file stored locally. @ is suppress wearning so we can handle myself.
@@ -255,14 +268,15 @@ function checkAmountIsFloat() {
         exit();
     }
 }
-//check if the currency code is valid to rates. NEED TO CHANGE TO GO TO THE RATES FILE AND MAKE A NEW ONE FOR CHECK CURRENCY AND API
+//check if the currency code is valid to rates.
 function checkCurrencyCode($currencyCode) {
     //Getting contries information from the file stored locally.
-    $countries = getCountries();
+    $rates = getRates();
     //Getting the currency code from the XML data file
-    $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='". $currencyCode ."']");
+    $ratesCode = $rates->xpath("/currencies/currency/curr[code='". $currencyCode ."']/code");
+    //$currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='". $currencyCode ."']");
     //If the Xpath returned false then show error
-    if (!$currencyLocations)
+    if (!$ratesCode[0] === $currencyCode)
     {   
         //Output error 1200 - Currency type not recognized 
         conductErrorMessage(1200);  
