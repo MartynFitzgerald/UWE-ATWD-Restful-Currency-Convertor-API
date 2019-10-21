@@ -150,7 +150,7 @@ function getCurrencies($currenciesAPIKey) {
     return $jsonFormatted;
 }
 //Initialize rates file if there isnt one already
-function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies) {
+function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $currencies) {
     //Creating timestamp for when created in XML document
     $timeStamp =  time();
     //Create XML Document
@@ -170,23 +170,11 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
         $currencyRate = $currencies[$currenciesISOCodes[$i]] / $currencies[$baseCurrency];
         //Setting the ISO code for this currency
         $currencyCode = $currenciesISOCodes[$i];
-        //Getting the currency name from the XML data file
-        $currencyName = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currenciesISOCodes[$i] . "']/CcyNm");
-        //Getting the currency locations from the XML data file
-        $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currenciesISOCodes[$i] . "']/CtryNm");
-        //Formatted the locations to put them into a string and also capitalization the first letter within a word
-        $currencyLocationsFormatted = ucwords(strtolower(implode(", ",$currencyLocations)));
-
         //Create main currency node for each currency pre-defined
         $itemNode = $dom->createElement("currency");
-        //Create few child nodes for to add the data to the currency node above
-        $itemNode->appendChild($dom->createElement("rate", $currencyRate));
-        $currNode = $itemNode->appendChild($dom->createElement("curr"));
-            $currNode->appendChild($dom->createElement("code", $currencyCode));
-            $currNode->appendChild($dom->createElement("name", $currencyName[0]));
-            $currNode->appendChild($dom->createElement("loc", $currencyLocationsFormatted));
-        //Attach the new child nodes to the main currency node 
-        $itemNode->appendChild($currNode);
+        //Adding attributes to the  currency node above
+        $itemNode->setAttributeNode(new DOMAttr("rate", $currencyRate));
+        $itemNode->setAttributeNode(new DOMAttr("code", $currencyCode));
         //Attach the main currency node to the main node in the XML document
         $root->appendChild($itemNode);
     }
@@ -199,10 +187,8 @@ function requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
     $currentCurrencies = getCurrencies($currenciesAPIKey);
     //Setting the rates of all currency rates to the a varible.
     $currencies = $currentCurrencies["rates"];
-    //Getting contries information from the file stored locally.
-    $countries = getCountries();
     //Call function to create new rates file
-    initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies);
+    initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $currencies);
 }
 //Check if the parameters in the GET method are correct to the ones pre defined
 function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefinedParameters) {
@@ -273,7 +259,7 @@ function checkCurrencyCode($currencyCode) {
     //Getting contries information from the file stored locally.
     $rates = getRates();
     //Getting the currency code from the XML data file
-    $ratesCode = $rates->xpath("/currencies/currency/curr[code='". $currencyCode ."']/code");
+    $ratesCode = $rates->xpath("/currencies/currency[@code='". $currencyCode ."']/@code");
     //$currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='". $currencyCode ."']");
     //If the Xpath returned false then show error
     if (!$ratesCode[0] === $currencyCode)
@@ -283,5 +269,43 @@ function checkCurrencyCode($currencyCode) {
         //Terminate the current script 
         exit();
     }
+}
+function getCurrencyName($currencyCode){
+    //Getting contries information from the file stored locally.
+    $countries = getCountries();
+    //Getting the currency name from the XML data file
+    $currencyName = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currencyCode . "']/CcyNm");
+    return $currencyName[0];
+}
+function getCurrencyLocationsFormatted($currencyCode){
+    //Getting contries information from the file stored locally.
+    $countries = getCountries();
+    //Getting the currency name from the XML data file
+    $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currencyCode . "']/CtryNm");
+    //Formatted the locations to put them into a string and also capitalization the first letter within a word
+    $currencyLocationsFormatted = ucwords(strtolower(implode(", ",$currencyLocations)));
+    return $currencyLocationsFormatted;
+}
+//check if the currency code is valid to rates.
+function conductConvMessage($countryFrom, $countryTo, $amount, $format){
+
+    //Getting contries information from the file stored locally.
+    $rates = getRates();
+    //Getting the currency rate from the XML data file
+    $rateFrom = $rates->xpath("/currencies/currency[@code='". $countryFrom ."']/@rate");
+    $rateTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']/@rate");
+    $ts = $rates->xpath("/currencies/@ts");
+
+    $rateConverted = $rateFrom[0] / $rateTo[0];
+    
+    $fromArray = array("code"=> $countryFrom, "curr"=> getCurrencyName($countryFrom), "loc"=> getCurrencyLocationsFormatted($countryFrom), "amnt"=> $rateFrom[0]);
+    $toArray = array("code"=> $countryTo, "curr"=> getCurrencyName($countryTo), "loc"=> getCurrencyLocationsFormatted($countryTo), "amnt"=> $rateTo[0]);
+    $dataArray = array("at"=> $ts[0], "rate"=> $rateConverted, "from"=> $fromArray, "to"=> $toArray);
+
+    //var_dump($outputArray);
+
+    $outputNode = constructOutputArray($dataArray, "conv");
+
+    convertArrayToFormatForOutput($outputNode);
 }
 ?>
