@@ -292,15 +292,14 @@ function conductConvMessage($countryFrom, $countryTo, $amount, $format){
     //Getting contries information from the file stored locally.
     $rates = getRates();
     //Getting the currency rate from the XML data file
-    $rateFrom = $rates->xpath("/currencies/currency[@code='". $countryFrom ."']/@rate");
     $rateTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']/@rate");
     $ts = $rates->xpath("/currencies/@ts");
 
-    $rateConverted = $rateFrom[0] / $rateTo[0];
+    $amountCalculation = round($rateTo[0] * $amount, 2);
     
-    $fromArray = array("code"=> $countryFrom, "curr"=> getCurrencyName($countryFrom), "loc"=> getCurrencyLocationsFormatted($countryFrom), "amnt"=> $rateFrom[0]);
-    $toArray = array("code"=> $countryTo, "curr"=> getCurrencyName($countryTo), "loc"=> getCurrencyLocationsFormatted($countryTo), "amnt"=> $rateTo[0]);
-    $dataArray = array("at"=> $ts[0], "rate"=> $rateConverted, "from"=> $fromArray, "to"=> $toArray);
+    $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCurrencyName($countryFrom), "loc"=> getCurrencyLocationsFormatted($countryFrom), "amnt"=> (float) $amount);
+    $toArray = array("code"=> $countryTo, "curr"=> (string) getCurrencyName($countryTo), "loc"=> getCurrencyLocationsFormatted($countryTo), "amnt"=> (float) $rateTo[0]);
+    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> $amountCalculation, "from"=> $fromArray, "to"=> $toArray);
 
     //var_dump($outputArray);
 
