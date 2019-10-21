@@ -1,36 +1,29 @@
 <!doctype html>
-
-<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>Restful Currency Convertor</title>
   <link rel="stylesheet" href="css/styles.css">
-
 </head>
-
 <body>
   <h1>Restful Currency Convertor</h1>
   <div class="formContainer" >
-    <h5>Form Interface for POST, PUT & DELETE:</h5>
+    <h3>Form Interface for POST, PUT & DELETE:</h3>
     <hr/>
     <form id="currencyForm">
         <h5>Action:</h5>
-        <input type="radio" name="gender" value="post" checked> Post
-        <input type="radio" name="gender" value="put"> Put
-        <input type="radio" name="gender" value="delete"> Delete
-        <h5>Currency Code:</h5>
-        <input type="text" name="code">
-        <h5>Currency Name:</h5>
-        <input type="text" name="name">
-        <h5>Rate (£=1):</h5>
-        <input type="text" name="rate">
-        <h5>Countries (comma separates if 1+):</h5>
-        <input type="text" name="countries">
+        <input type="radio" name="post" value="post" checked> Post
+        <input type="radio" name="put" value="put"> Put
+        <input type="radio" name="delete" value="delete"> Delete
+        <h5>Currency: </h5>
+        <select name="currency">
+          <option value="" disabled selected>Select currency code</option>
+          <option value="volvo">Volvo</option>
+        </select>
         <br/><br/>
         <input class="submit" type="submit" value="Submit">
-        <hr/>
+        <br/><br/>
         <h5>Response Message:</h5>
-        <textarea rows="10" cols="38" name="response" form="currencyForm">Enter text here...</textarea>
+        <textarea rows="15" cols="54" name="response" form="currencyForm"></textarea>
     </form>
   </div>
 </body>
