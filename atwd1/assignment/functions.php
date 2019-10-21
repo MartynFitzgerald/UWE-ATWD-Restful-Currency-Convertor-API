@@ -11,19 +11,18 @@
 |  Description:  Creating a functions used in the index.php file
 |
 *===========================================================================*/
-
+//Function to output json to the user
 function displayJSON($json) {
     header('Content-Type: application/json');
     echo $json;
 }
-
+//Function to output XML to the user
 function displayXML($dom) {
     header('Content-Type: text/xml');
     echo $dom->asXML();
 }
-
+//Function to contruct the array with the main node within the output.
 function constructOutputArray($dataNode, $type) {
-
     if($type === "error")
     {
         $errorNode = array("error"=>$dataNode);
@@ -39,8 +38,7 @@ function constructOutputArray($dataNode, $type) {
     }
     return $outputNode;
 }
-
-//function defination to convert array to xml
+//Function defination to convert array to xml
 //source: https://www.codexworld.com/convert-array-to-xml-in-php/
 function array_to_xml($array, &$xml_user_info) {
     foreach($array as $key => $value) {
@@ -57,18 +55,18 @@ function array_to_xml($array, &$xml_user_info) {
         }
     }
 }
-
+//This is converts the PHP array to XML or JSON depending on request  
 function convertArrayToFormatForOutput($outputNode) {
-
+    //Default to XML if json isn't specified  
     if ($_REQUEST["format"] == "json")
     {
         $outputJSON = json_encode($outputNode);
         displayJSON($outputJSON);
     }
     else
-    {
-        //Default to xml if nothing is specified   
+    { 
         $firstNodeKey = array_keys($outputNode)[0];
+
         $xml = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . "></" . $firstNodeKey . ">");
         
         array_to_xml($outputNode[$firstNodeKey],$xml);
@@ -76,7 +74,7 @@ function convertArrayToFormatForOutput($outputNode) {
     } 
 
 }
-
+//
 function conductErrorMessage($errorCode){
     $message = searchForError($errorCode);
         
