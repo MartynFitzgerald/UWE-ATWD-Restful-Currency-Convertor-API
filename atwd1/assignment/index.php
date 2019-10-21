@@ -39,13 +39,13 @@ else
     $rates = simplexml_load_file('./data/'. $xmlFileName) or die("Error: Cannot create object");
     
     //Getting the currency name from the XML data file
-    $ratesTimeStamp = $rates->xpath("/currencies/currency/at");
+    $ratesTimeStamp = $rates->xpath("/currencies/@ts");
     $formatTimeStamp = date('d F Y H:i',  substr($ratesTimeStamp[0], 0, 10));
 
     if($ratesTimeStamp <= strtotime("-2 hours"))
     {
         //Update here 
-        //echo "Not within 2 Hours - " . $formatTimeStamp . "</br>";
+        echo "Not within 2 Hours - " . $formatTimeStamp . "</br>";
 
         //Rename XML file to inlcude date
         rename("./data/rates.xml", "./data/rates" . $ratesTimeStamp[0] . ".xml");

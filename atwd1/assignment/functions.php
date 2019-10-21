@@ -138,20 +138,21 @@ function getCurrencies($currenciesAPIKey) {
 }
 //Initialize rates file if there isnt one already
 function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies) {
+    //Creating timestamp for when created in XML document
+    $timeStamp =  time();
     //Create XML Document
     $dom = new DOMDocument("1.0");
     //Creating "currencies" Node
     $root = $dom->createElement("currencies");
-    //Adding attribute "base" to "currencies" Node
+    //Adding attribute "base" and "ts" to "currencies" Node
     $root->setAttributeNode(new DOMAttr("base", $baseCurrency));
+    $root->setAttributeNode(new DOMAttr("ts", $timeStamp));
     //Setting root to the XML document
     $dom->appendChild($root);
 
     //This loop cycles through the predefined rates.
     for ($i = 0; $i < sizeof($currenciesISOCodes); $i++)
     {
-        //Creating timestamp for when created in XML document
-        $timeStamp =  time();
         //Calculating the rate, since the API base currency isnt GBP
         $currencyRate = $currencies[$currenciesISOCodes[$i]] / $currencies[$baseCurrency];
         //Setting the ISO code for this currency
@@ -166,7 +167,6 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
         //Create main currency node for each currency pre-defined
         $itemNode = $dom->createElement("currency");
         //Create few child nodes for to add the data to the currency node above
-        $itemNode->appendChild($dom->createElement("at", $timeStamp));
         $itemNode->appendChild($dom->createElement("rate", $currencyRate));
         $currNode = $itemNode->appendChild($dom->createElement("curr"));
             $currNode->appendChild($dom->createElement("code", $currencyCode));
