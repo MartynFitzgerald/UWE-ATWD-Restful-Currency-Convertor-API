@@ -40,15 +40,15 @@ function constructOutputArray($dataNode, $type) {
 }
 //Function defination to convert array to xml
 //source: https://www.codexworld.com/convert-array-to-xml-in-php/
-function array_to_xml($array, &$xml_user_info) {
+function arrayToXML($array, &$xml_user_info) {
     foreach($array as $key => $value) {
         if(is_array($value)) {
             if(!is_numeric($key)){
                 $subnode = $xml_user_info->addChild("$key");
-                array_to_xml($value, $subnode);
+                arrayToXML($value, $subnode);
             }else{
                 $subnode = $xml_user_info->addChild("item$key");
-                array_to_xml($value, $subnode);
+                arrayToXML($value, $subnode);
             }
         }else {
             $xml_user_info->addChild("$key",htmlspecialchars("$value"));
@@ -69,41 +69,10 @@ function convertArrayToFormatForOutput($outputNode) {
 
         $xml = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . "></" . $firstNodeKey . ">");
         
-        array_to_xml($outputNode[$firstNodeKey],$xml);
+        arrayToXML($outputNode[$firstNodeKey],$xml);
         displayXML($xml);
     } 
-
 }
-//
-function conductErrorMessage($errorCode){
-    $message = searchForError($errorCode);
-        
-    $dataArray = array("code"=>$errorCode, "msg"=>(string) $message);
-
-    $outputNode = constructOutputArray($dataArray, "error");
-
-    convertArrayToFormatForOutput($outputNode);
-}
-
-//Get list of the contries that support all of the currencies. Also declaring the return to SimpleXMLElement in this function.
-function getCountries(){
-    //Getting contries information from the file stored locally.
-    $xml = simplexml_load_file('./data/countries.xml') or die("Error in service");
-    return $xml;
-}
-//Get list of the currencies and their rates at current time.
-function getCurrencies($currenciesAPIKey) {
-    //Getting current currencies information from the API
-    return json_decode(file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey),true);
-}
-
-//Get list of the errors.
-function getErrors(){
-    //Getting errors information from the file stored locally.
-    $xml = simplexml_load_file('./data/errors.xml') or die("Error in service");
-    return $xml;
-}
-
 //Search list of the errors with the code to get the message.
 function searchForError($errorCode){
     //Getting errors information from the file stored locally.
@@ -114,31 +83,67 @@ function searchForError($errorCode){
 
     return $errorMessage[0];
 }
+//
+function conductErrorMessage($errorCode, $message = null){
+    if ($message == null)
+    {
+        $message = searchForError($errorCode);
+    }
+        
+    $dataArray = array("code"=>$errorCode, "msg"=>(string) $message);
 
-function requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey) {
+    $outputNode = constructOutputArray($dataArray, "error");
 
-    //Call function to get current currencies information from the API
-    $currentCurrencies = getCurrencies($currenciesAPIKey);
-    
-    //Setting the rates of all currency rates to the a varible.
-    $currencies = $currentCurrencies["rates"];
-
-    //Getting contries information from the file stored locally.
-    $countries = getCountries();
-
-    initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies);
+    convertArrayToFormatForOutput($outputNode);
 }
-
+//Get list of the errors.
+function getErrors(){
+    //Getting errors information from the file stored locally. @ is suppress wearning so we can handle myself.
+    $xml = @simplexml_load_file('./data/errors.xml');
+    //Check if we don't have valid XML file
+    if ($xml === false)
+    {
+        //Send error message to user and then kill the service
+        conductErrorMessage(1500, "Error in service");
+        exit();
+    }
+    return $xml;
+}
+//Get list of the contries that support all of the currencies. Also declaring the return to SimpleXMLElement in this function.
+function getCountries(){
+    //Getting contries information from the file stored locally. @ is suppress wearning so we can handle myself.
+    $xml = @simplexml_load_file('./data/countries.xml');
+    //Check if we don't have valid XML file
+    if ($xml === false)
+    {
+        //Send error message to user and then kill the service
+        conductErrorMessage(1500, "Error in service");
+        exit();
+    }
+    return $xml;
+}
+//Get list of the currencies and their rates at current time.
+function getCurrencies($currenciesAPIKey) {
+    //Getting current currencies information from the API. @ is suppress wearning so we can handle myself.
+    $json = @file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey);
+    $jsonFormatted = json_decode($json, true);
+    //Check if we don't have valid XML file
+    if ($json === false || $jsonFormatted["success"] === false)
+    {
+        //Send error message to user and then kill the service
+        conductErrorMessage(1500, "Error in service");
+        exit();
+    }
+    return $jsonFormatted;
+}
+//Initialize rates file if there isnt one already
 function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies) {
     //Create XML Document
     $dom = new DOMDocument("1.0");
-
     //Creating "currencies" Node
     $root = $dom->createElement("currencies");
-
     //Adding attribute "base" to "currencies" Node
     $root->setAttributeNode(new DOMAttr("base", $baseCurrency));
-
     //Setting root to the XML document
     $dom->appendChild($root);
 
@@ -157,9 +162,6 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
         $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currenciesISOCodes[$i] . "']/CtryNm");
         //Formatted the locations to put them into a string and also capitalization the first letter within a word
         $currencyLocationsFormatted = ucwords(strtolower(implode(", ",$currencyLocations)));
-        
-        //Print this out to the screen now
-        //echo $timeStamp ." - " . $currencyRate . " - " . $currencyCode . " - " . $currencyName[0] . " - " . $currencyLocationsFormatted . "</br>";  
 
         //Create main currency node for each currency pre-defined
         $itemNode = $dom->createElement("currency");
@@ -175,11 +177,21 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
         //Attach the main currency node to the main node in the XML document
         $root->appendChild($itemNode);
     }
-
     //Saving XML document to the filename defined above
     $dom->save('./data/'. $xmlFileName);
 }
-
+//Get the data from api and inialized rates XML
+function requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey) {
+    //Call function to get current currencies information from the API
+    $currentCurrencies = getCurrencies($currenciesAPIKey);
+    //Setting the rates of all currency rates to the a varible.
+    $currencies = $currentCurrencies["rates"];
+    //Getting contries information from the file stored locally.
+    $countries = getCountries();
+    //Call function to create new rates file
+    initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $countries, $currencies);
+}
+//Check if the parameters in the GET method are correct to the ones pre defined
 function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefinedParameters) {
     //Check if there is the wrong amount of parameters
     if ($amountOfGetKeys == $amountOfGetParameters)
@@ -223,7 +235,7 @@ function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefin
         exit();
     }
 }
-
+//Checking if they have given me a format that is allowed.
 function checkFormatGetValue() {
     if (!($_REQUEST["format"] == "xml" || $_REQUEST["format"] == "json"))
     {
@@ -233,7 +245,7 @@ function checkFormatGetValue() {
         exit();
     }
 }
-
+//Checking if the amount given is a float. 
 function checkAmountIsFloat() {
     if (!(is_numeric( $_REQUEST["amnt"] ) || floor( $_REQUEST["amnt"] ) != $_REQUEST["amnt"]))
     {
@@ -243,7 +255,7 @@ function checkAmountIsFloat() {
         exit();
     }
 }
-
+//check if the currency code is valid to rates. NEED TO CHANGE TO GO TO THE RATES FILE AND MAKE A NEW ONE FOR CHECK CURRENCY AND API
 function checkCurrencyCode($currencyCode) {
     //Getting contries information from the file stored locally.
     $countries = getCountries();
@@ -251,8 +263,7 @@ function checkCurrencyCode($currencyCode) {
     $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='". $currencyCode ."']");
     //If the Xpath returned false then show error
     if (!$currencyLocations)
-    {
-        
+    {   
         //Output error 1200 - Currency type not recognized 
         conductErrorMessage(1200);  
         //Terminate the current script 
