@@ -298,8 +298,8 @@ function conductConvMessage($countryFrom, $countryTo, $amount, $format){
     $amountCalculation = round($rateTo[0] * $amount, 2);
     
     $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCurrencyName($countryFrom), "loc"=> getCurrencyLocationsFormatted($countryFrom), "amnt"=> (float) $amount);
-    $toArray = array("code"=> $countryTo, "curr"=> (string) getCurrencyName($countryTo), "loc"=> getCurrencyLocationsFormatted($countryTo), "amnt"=> (float) $rateTo[0]);
-    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> $amountCalculation, "from"=> $fromArray, "to"=> $toArray);
+    $toArray = array("code"=> $countryTo, "curr"=> (string) getCurrencyName($countryTo), "loc"=> getCurrencyLocationsFormatted($countryTo), "amnt"=> $amountCalculation);
+    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $rateTo[0], "from"=> $fromArray, "to"=> $toArray);
 
     //var_dump($outputArray);
 
