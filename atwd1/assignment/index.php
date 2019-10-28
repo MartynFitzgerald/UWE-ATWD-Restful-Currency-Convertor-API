@@ -40,7 +40,7 @@ else
     //Formatting the timestamp to the date format
     $formatTimeStamp = date('d F Y H:i',  substr($ratesTimeStamp[0], 0, 10));
 
-    if($ratesTimeStamp <= strtotime("-2 hours"))
+    if($ratesTimeStamp[0] <= strtotime("-2 hours"))
     {
         //Update here 
         echo "Not within 2 Hours - " . $formatTimeStamp . "</br>";
