@@ -270,16 +270,12 @@ function checkCurrencyCode($currencyCode) {
         exit();
     }
 }
-function getCurrencyName($currencyCode){
-    //Getting contries information from the file stored locally.
-    $countries = getCountries();
+function getCurrencyName($countries, $currencyCode){
     //Getting the currency name from the XML data file
     $currencyName = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currencyCode . "']/CcyNm");
     return $currencyName[0];
 }
-function getCurrencyLocationsFormatted($currencyCode){
-    //Getting contries information from the file stored locally.
-    $countries = getCountries();
+function getCurrencyLocationsFormatted($countries, $currencyCode){
     //Getting the currency name from the XML data file
     $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currencyCode . "']/CtryNm");
     //Formatted the locations to put them into a string and also capitalization the first letter within a word
@@ -288,7 +284,8 @@ function getCurrencyLocationsFormatted($currencyCode){
 }
 //check if the currency code is valid to rates.
 function conductConvMessage($countryFrom, $countryTo, $amount, $format){
-
+    //Getting contries information from the file stored locally.
+    $countries = getCountries();
     //Getting contries information from the file stored locally.
     $rates = getRates();
     //Getting the currency rate from the XML data file
@@ -297,8 +294,8 @@ function conductConvMessage($countryFrom, $countryTo, $amount, $format){
 
     $amountCalculation = round($rateTo[0] * $amount, 2);
     
-    $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCurrencyName($countryFrom), "loc"=> getCurrencyLocationsFormatted($countryFrom), "amnt"=> (float) $amount);
-    $toArray = array("code"=> $countryTo, "curr"=> (string) getCurrencyName($countryTo), "loc"=> getCurrencyLocationsFormatted($countryTo), "amnt"=> $amountCalculation);
+    $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCurrencyName($countries, $countryFrom), "loc"=> getCurrencyLocationsFormatted($countries, $countryFrom), "amnt"=> (float) $amount);
+    $toArray = array("code"=> $countryTo, "curr"=> (string) getCurrencyName($countries, $countryTo), "loc"=> getCurrencyLocationsFormatted($countries, $countryTo), "amnt"=> $amountCalculation);
     $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $rateTo[0], "from"=> $fromArray, "to"=> $toArray);
 
     //var_dump($outputArray);
