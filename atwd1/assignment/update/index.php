@@ -1,21 +1,41 @@
+<?php
+/*=============================================================================
+|      Editors:  Martyn Fitzgerald - 16025948
+|
+|  Module Code:  UFCFX3-15-3
+| Module Title:  ADVANCED TOPICS IN WEB DEVELOPMENT 1
+|                
+|   Instructor:  Prakash Chatterjee
+|     Due Date:  21/11/2019
+|
+|  Description:  This file gets the sets all the predfined arrays and creates
+|                the rates file if none exist and gets the infromation to
+|                display for the conversion.
+|
+*===========================================================================*/
+//Defining get parameters 
+$getPreDefinedParameters = ["cur","action"];
+
 $cur = $_REQUEST["cur"];
-    $action = $_REQUEST["action"];
+$action = $_REQUEST["action"];
 
-    echo $cur ." - " . $action . "</br>";  
+//Checking if the to and from values are a currency type recognized
+checkCurrencyCode($cur);
 
-    if ($action === "post")
-    {
+if ($action === "post")
+{
 
-    }
-    else if ($action === "put")
-    {
+}
+else if ($action === "put")
+{
 
-    }
-    else if ($action === "del")
-    {
+}
+else if ($action === "del")
+{
 
-    }
-    else
-    {
-        //wrong action given...
-    }
+}
+else
+{
+    //wrong action given...
+}
+?>

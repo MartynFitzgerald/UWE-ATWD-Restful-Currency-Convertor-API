@@ -2,13 +2,13 @@
 /*=============================================================================
 |      Editors:  Martyn Fitzgerald - 16025948
 |
-|  Module Code:  UFCFV4-30-2
-| Module Title:  Data, Schemas & Applications
+|  Module Code:  UFCFX3-15-3
+| Module Title:  ADVANCED TOPICS IN WEB DEVELOPMENT 1
 |                
-|   Instructor:  Prakash Chatterjee / Glyn Watkins
-|     Due Date:  14/03/2019
+|   Instructor:  Prakash Chatterjee
+|     Due Date:  21/11/2019
 |
-|  Description:  Creating a functions used in the index.php file
+|  Description:  Creating functions used in both of the index.php file
 |
 *===========================================================================*/
 //Function to output json to the user
@@ -58,7 +58,7 @@ function arrayToXML($array, &$xml_user_info) {
 //This is converts the PHP array to XML or JSON depending on request  
 function convertArrayToFormatForOutput($outputNode) {
     //Default to XML if json isn't specified  
-    if ($_REQUEST["format"] == "json")
+    if (@$_REQUEST["format"] === "json")
     {
         $outputJSON = json_encode($outputNode);
         displayJSON($outputJSON);
@@ -236,7 +236,7 @@ function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefin
 }
 //Checking if they have given me a format that is allowed.
 function checkFormatGetValue() {
-    if (!($_REQUEST["format"] == "xml" || $_REQUEST["format"] == "json"))
+    if (!(@$_REQUEST["format"] == "xml" || @$_REQUEST["format"] == "json"))
     {
         //Output error 1400 - Format must be xml or json 
         conductErrorMessage(1400);
@@ -246,7 +246,7 @@ function checkFormatGetValue() {
 }
 //Checking if the amount given is a float. 
 function checkAmountIsFloat() {
-    if (!(is_numeric( $_REQUEST["amnt"] ) || floor( $_REQUEST["amnt"] ) != $_REQUEST["amnt"]))
+    if (!(is_numeric(@$_REQUEST["amnt"] ) || floor(@$_REQUEST["amnt"] ) != $_REQUEST["amnt"]))
     {
         //Output error 1300 - Currency amount must be a decimal number 
         conductErrorMessage(1300); 

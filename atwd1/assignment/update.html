@@ -3,6 +3,7 @@
   <meta charset="utf-8">
   <title>Restful Currency Convertor</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </head>
 <body>
   <h1>Restful Currency Convertor</h1>
@@ -11,20 +12,45 @@
     <hr/>
     <form id="currencyForm">
         <h5>Action:</h5>
-        <input type="radio" name="post" value="post" checked> Post
-        <input type="radio" name="put" value="put"> Put
-        <input type="radio" name="delete" value="delete"> Delete
+        <input type="radio" name="action" value="post" checked> Post
+        <input type="radio" name="action" value="put"> Put
+        <input type="radio" name="action" value="delete"> Delete
         <h5>Currency: </h5>
-        <select name="currency">
-          <option value="" disabled selected>Select currency code</option>
-          <option value="volvo">Volvo</option>
+        <select id="cur" name="cur">
+          <option disabled selected>Select currency code</option>
         </select>
         <br/><br/>
         <input class="submit" type="submit" value="Submit">
         <br/><br/>
         <h5>Response Message:</h5>
-        <textarea rows="15" cols="54" name="response" form="currencyForm"></textarea>
+        <textarea rows="15" cols="54" form="currencyForm"></textarea>
     </form>
   </div>
 </body>
+<script>
+$.ajax({
+  type: "GET",
+  url: "./data/countries.xml",
+  dataType: "xml",
+  success: function (xml) {
+      var select = $('#cur');
+      var arrayCodes = [];
+      $(xml).find('CcyNtry').each(function () {
+          var code = $(this).find('Ccy').text();
+          if ((!code == "") || (!code == undefined))
+          {
+            arrayCodes.push(code);
+          }
+      }); 
+      var filteredArray = arrayCodes.filter(function(item, pos){
+        return arrayCodes.indexOf(item)== pos; 
+      });
+      for(var i = 0; i < filteredArray.length; i++)
+      {
+        select.append("<option>" + filteredArray[i] + "</option>");
+      }
+  } 
+}); 
+
+</script> 
 </html>

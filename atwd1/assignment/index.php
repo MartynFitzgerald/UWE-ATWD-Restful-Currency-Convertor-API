@@ -2,13 +2,15 @@
 /*=============================================================================
 |      Editors:  Martyn Fitzgerald - 16025948
 |
-|  Module Code:  UFCFV4-30-2
-| Module Title:  Data, Schemas & Applications
+|  Module Code:  UFCFX3-15-3
+| Module Title:  ADVANCED TOPICS IN WEB DEVELOPMENT 1
 |                
-|   Instructor:  Prakash Chatterjee / Glyn Watkins
-|     Due Date:  14/03/2019
+|   Instructor:  Prakash Chatterjee
+|     Due Date:  21/11/2019
 |
-|  Description:  Creating a JSON object with the data inside our MYSQL Database
+|  Description:  This file gets the sets all the predfined arrays and creates
+|                the rates file if none exist and gets the infromation to
+|                display for the conversion.
 |
 *===========================================================================*/
 include 'functions.php';
@@ -42,8 +44,6 @@ else
 
     if($ratesTimeStamp[0] <= strtotime("-2 hours"))
     {
-        //Update here 
-        echo "Not within 2 Hours - " . $formatTimeStamp . "</br>";
         //Rename XML file to inlcude date
         rename("./data/rates.xml", "./data/rates" . $ratesTimeStamp[0] . ".xml");
          //Request data from APIs and create rates.xml file
@@ -71,14 +71,12 @@ if ((isset($_REQUEST["from"])) && (isset($_REQUEST["to"]))  && (isset($_REQUEST[
     //Checking if the format request is either xml or json
     checkFormatGetValue();
 
-    //echo $countryFrom ." - " . $countryTo . " - " . $amount . " - " . $format . "</br>";  
     conductConvMessage($countryFrom, $countryTo, $amount, $format);
 }
 else
 {
     //Output error 1200 - Currency type not recognized 
     conductErrorMessage(1200);  
-    echo "Required parameter is missing </br>";  
     //Terminate the current script 
     exit();
 } 
