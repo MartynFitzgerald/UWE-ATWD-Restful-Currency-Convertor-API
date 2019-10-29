@@ -11,6 +11,8 @@
 |  Description:  Creating functions used in both of the index.php file
 |
 *===========================================================================*/
+// API key for the currencies, allows me to get live information.
+$currenciesAPIKey = "313f82e98f94595c11df26da43b9835f";
 //Function to output json to the user
 function displayJSON($json) {
     header('Content-Type: application/json');
@@ -23,18 +25,15 @@ function displayXML($dom) {
 }
 //Function to contruct the array with the main node within the output.
 function constructOutputArray($dataNode, $type) {
-    if($type === "error")
-    {
+    if($type === "error") {
         $errorNode = array("error"=>$dataNode);
         $outputNode = array("conv"=>$errorNode);
     }
-    else if($type === "conv")
-    {
+    else if($type === "conv") {
         $outputNode = array("conv"=>$dataNode);
     }
-    else if($type === "action")
-    {
-        $outputNode = array("conv"=>$dataNode);
+    else if($type === "action") {
+        $outputNode = array("action"=>$dataNode);
     }
     return $outputNode;
 }
@@ -43,14 +42,16 @@ function constructOutputArray($dataNode, $type) {
 function arrayToXML($array, &$xml_user_info) {
     foreach($array as $key => $value) {
         if(is_array($value)) {
-            if(!is_numeric($key)){
+            if(!is_numeric($key)) {
                 $subnode = $xml_user_info->addChild("$key");
                 arrayToXML($value, $subnode);
-            }else{
+            }
+            else {
                 $subnode = $xml_user_info->addChild("item$key");
                 arrayToXML($value, $subnode);
             }
-        }else {
+        }
+        else {
             $xml_user_info->addChild("$key",htmlspecialchars("$value"));
         }
     }
@@ -58,13 +59,11 @@ function arrayToXML($array, &$xml_user_info) {
 //This is converts the PHP array to XML or JSON depending on request  
 function convertArrayToFormatForOutput($outputNode) {
     //Default to XML if json isn't specified  
-    if (@$_REQUEST["format"] === "json")
-    {
+    if (@$_REQUEST["format"] === "json") {
         $outputJSON = json_encode($outputNode);
         displayJSON($outputJSON);
     }
-    else
-    { 
+    else { 
         $firstNodeKey = array_keys($outputNode)[0];
 
         $xml = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . "></" . $firstNodeKey . ">");
@@ -85,8 +84,7 @@ function searchForError($errorCode){
 }
 //
 function conductErrorMessage($errorCode, $message = null){
-    if ($message == null)
-    {
+    if ($message == null) {
         $message = searchForError($errorCode);
     }
         
@@ -94,58 +92,67 @@ function conductErrorMessage($errorCode, $message = null){
 
     $outputNode = constructOutputArray($dataArray, "error");
 
-    convertArrayToFormatForOutput($outputNode);
+    convertArrayToFormatForOutput($outputNode); 
+    //Terminate the current script 
+    exit();
 }
 //Get list of the rates.
 function getRates(){
     //Getting rates information from the file stored locally. @ is suppress wearning so we can handle myself.
-    $xml = @simplexml_load_file('./data/rates.xml');
+    if (is_file('./data/rates.xml')) {
+        $xml = @simplexml_load_file('./data/rates.xml');
+    }
+    else {
+        $xml = @simplexml_load_file('../data/rates.xml');
+    }
     //Check if we don't have valid XML file
-    if ($xml === false)
-    {
+    if ($xml === false) {
         //Send error message to user and then kill the service
         conductErrorMessage(1500, "Error in service");
-        exit();
     }
     return $xml;
 }
 //Get list of the errors.
 function getErrors(){
     //Getting errors information from the file stored locally. @ is suppress wearning so we can handle myself.
-    $xml = @simplexml_load_file('./data/errors.xml');
+    if (is_file('./data/errors.xml')) {
+        $xml = @simplexml_load_file('./data/errors.xml');
+    }
+    else {
+        $xml = @simplexml_load_file('../data/errors.xml');
+    }
     //Check if we don't have valid XML file
-    if ($xml === false)
-    {
+    if ($xml === false) {
         //Send error message to user and then kill the service
         conductErrorMessage(1500, "Error in service");
-        exit();
     }
     return $xml;
 }
 //Get list of the contries that support all of the currencies. Also declaring the return to SimpleXMLElement in this function.
 function getCountries(){
     //Getting contries information from the file stored locally. @ is suppress wearning so we can handle myself.
-    $xml = @simplexml_load_file('./data/countries.xml');
+    if (is_file('./data/countries.xml')) {
+        $xml = @simplexml_load_file('./data/countries.xml');
+    }
+    else {
+        $xml = @simplexml_load_file('../data/countries.xml');
+    }
     //Check if we don't have valid XML file
-    if ($xml === false)
-    {
+    if ($xml === false) {
         //Send error message to user and then kill the service
         conductErrorMessage(1500, "Error in service");
-        exit();
     }
     return $xml;
 }
 //Get list of the currencies and their rates at current time.
-function getCurrencies($currenciesAPIKey) {
+function getCurrencies() {
     //Getting current currencies information from the API. @ is suppress wearning so we can handle myself.
     $json = @file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey);
     $jsonFormatted = json_decode($json, true);
     //Check if we don't have valid XML file
-    if ($json === false || $jsonFormatted["success"] === false)
-    {
+    if ($json === false || $jsonFormatted["success"] === false) {
         //Send error message to user and then kill the service
         conductErrorMessage(1500, "Error in service");
-        exit();
     }
     return $jsonFormatted;
 }
@@ -164,8 +171,7 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
     $dom->appendChild($root);
 
     //This loop cycles through the predefined rates.
-    for ($i = 0; $i < sizeof($currenciesISOCodes); $i++)
-    {
+    for ($i = 0; $i < sizeof($currenciesISOCodes); $i++) {
         //Calculating the rate, since the API base currency isnt GBP
         $currencyRate = $currencies[$currenciesISOCodes[$i]] / $currencies[$baseCurrency];
         //Setting the ISO code for this currency
@@ -182,9 +188,9 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
     $dom->save('./data/'. $xmlFileName);
 }
 //Get the data from api and inialized rates XML
-function requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey) {
+function requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName) {
     //Call function to get current currencies information from the API
-    $currentCurrencies = getCurrencies($currenciesAPIKey);
+    $currentCurrencies = getCurrencies();
     //Setting the rates of all currency rates to the a varible.
     $currencies = $currentCurrencies["rates"];
     //Call function to create new rates file
@@ -193,65 +199,47 @@ function requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
 //Check if the parameters in the GET method are correct to the ones pre defined
 function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefinedParameters) {
     //Check if there is the wrong amount of parameters
-    if ($amountOfGetKeys == $amountOfGetParameters)
-    {
+    if ($amountOfGetKeys == $amountOfGetParameters) {
         //Cycle through all of the HTTP GET Request keys
         for($i = 0; $i < $amountOfGetKeys; $i++) {
             //Cycle through all of the pre-defined expected parameters 
             for($j = 0; $j < $amountOfGetParameters; $j++) {
                 //Check if the HTTP GET Request key equals to the expected parameter
-                if (array_keys($_REQUEST)[$i] == $getPreDefinedParameters[$j])
-                {
+                if (array_keys($_REQUEST)[$i] == $getPreDefinedParameters[$j]) {
                     //If it does then break out of the first for loop to move on to the next HTTP GET Request key
                     break;
                 }
-                else
-                {
+                else {
                     //If not then check if it has cycled through all of the pre-definedexpected parameters 
-                    if ($j >= $amountOfGetParameters - 1)
-                    {
+                    if ($j >= $amountOfGetParameters - 1) {
                         //Output error 1100 - Parameter not recognized
                         conductErrorMessage(1100); 
-                        //Terminate the current script 
-                        exit();
                     }
                 }
             }
         }
     }
-    else if ($amountOfGetKeys > $amountOfGetParameters)
-    {
+    else if ($amountOfGetKeys > $amountOfGetParameters) {
         //Output error 1100 - Parameter not recognized
         conductErrorMessage(1100); 
-        //Terminate the current script 
-        exit();
     }
-    else if ($amountOfGetKeys < $amountOfGetParameters)
-    {
+    else if ($amountOfGetKeys < $amountOfGetParameters) {
         //Output error 1000 - Required parameter is missing
         conductErrorMessage(1000); 
-        //Terminate the current script 
-        exit();
     }
 }
 //Checking if they have given me a format that is allowed.
 function checkFormatGetValue() {
-    if (!(@$_REQUEST["format"] == "xml" || @$_REQUEST["format"] == "json"))
-    {
+    if (!(@$_REQUEST["format"] == "xml" || @$_REQUEST["format"] == "json")) {
         //Output error 1400 - Format must be xml or json 
         conductErrorMessage(1400);
-        //Terminate the current script 
-        exit();
     }
 }
 //Checking if the amount given is a float. 
-function checkAmountIsFloat() {
-    if (!(is_numeric(@$_REQUEST["amnt"] ) || floor(@$_REQUEST["amnt"] ) != $_REQUEST["amnt"]))
-    {
+function checkAmountIsFloat($value) {
+    if (!(is_numeric($value ) || floor($value ) != $value)) {
         //Output error 1300 - Currency amount must be a decimal number 
         conductErrorMessage(1300); 
-        //Terminate the current script 
-        exit();
     }
 }
 //check if the currency code is valid to rates.
@@ -260,14 +248,22 @@ function checkCurrencyCode($currencyCode) {
     $rates = getRates();
     //Getting the currency code from the XML data file
     $ratesCode = $rates->xpath("/currencies/currency[@code='". $currencyCode ."']/@code");
-    //$currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='". $currencyCode ."']");
     //If the Xpath returned false then show error
-    if (!$ratesCode[0] === $currencyCode)
-    {   
+    if (!@$ratesCode[0] == $currencyCode) {   
         //Output error 1200 - Currency type not recognized 
         conductErrorMessage(1200);  
-        //Terminate the current script 
-        exit();
+    }
+}
+//check if the currency code is valid to countries.
+function checkCurrencyCodeToXML($currencyCode) {
+    //Getting contries information from the file stored locally.
+    $countries = getCountries();
+    //Getting the currency code from the XML data file
+    $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='". $currencyCode ."']/Ccy");
+    //If the Xpath returned false then show error
+    if (!@$currencyLocations[0] == $currencyCode) {  
+        //Output error 2200 - Currency code not found for update 
+        conductErrorMessage(2200);  
     }
 }
 function getCurrencyName($countries, $currencyCode){
@@ -282,7 +278,7 @@ function getCurrencyLocationsFormatted($countries, $currencyCode){
     $currencyLocationsFormatted = ucwords(strtolower(implode(", ",$currencyLocations)));
     return $currencyLocationsFormatted;
 }
-//check if the currency code is valid to rates.
+//Display the currency conversion to the user and do the calulation to get value.
 function conductConvMessage($countryFrom, $countryTo, $amount, $format){
     //Getting contries information from the file stored locally.
     $countries = getCountries();
@@ -298,9 +294,34 @@ function conductConvMessage($countryFrom, $countryTo, $amount, $format){
     $toArray = array("code"=> $countryTo, "curr"=> (string) getCurrencyName($countries, $countryTo), "loc"=> getCurrencyLocationsFormatted($countries, $countryTo), "amnt"=> $amountCalculation);
     $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $rateTo[0], "from"=> $fromArray, "to"=> $toArray);
 
-    //var_dump($outputArray);
-
     $outputNode = constructOutputArray($dataArray, "conv");
+
+    convertArrayToFormatForOutput($outputNode);
+}
+//Update currency rate in the rates file.
+function updateCurrencyRate($cur){
+
+}
+//Display the currency conversion to the user and do the calulation to get value.
+function conductPostMessage($action, $cur){
+    //Getting contries information from the file stored locally.
+    $countries = getCountries();
+    //Getting contries information from the file stored locally.
+    $rates = getRates();
+    //Getting currencies information from the APi.
+    $currencies = getCurrencies();
+    
+    //Setting the rates of all currency rates to the a varible.
+    $currencies = $currentCurrencies["rates"];
+
+    //Getting the currency rate from the XML data file
+    $rateTo = $rates->xpath("/currencies/currency[@code='". $cur ."']/@rate");
+    $ts = $rates->xpath("/currencies/@ts");
+    
+    $curArray = array("code"=> $cur, "name"=> (string) getCurrencyName($countries, $cur), "loc"=> getCurrencyLocationsFormatted($countries, $cur));
+    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $rateTo[0], "old_rate"=> $rateTo[0], "curr"=> $curArray);
+
+    $outputNode = constructOutputArray($dataArray, "action");
 
     convertArrayToFormatForOutput($outputNode);
 }

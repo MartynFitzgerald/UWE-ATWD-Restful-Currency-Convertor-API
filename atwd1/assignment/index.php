@@ -22,8 +22,6 @@ $getPreDefinedParameters = ["from","to","amnt","format"];
 $baseCurrency = "GBP";
 //File name for the rates stored.
 $xmlFileName = 'rates.xml';
-// API key for the currencies, allows me to get live information.
-$currenciesAPIKey = "313f82e98f94595c11df26da43b9835f";
 //Setting default timezone of the service
 date_default_timezone_set("Europe/London");
 
@@ -31,7 +29,7 @@ date_default_timezone_set("Europe/London");
 if (!file_exists('./data/'. $xmlFileName))
 {
     //Request data from APIs and create rates.xml file
-    requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey);
+    requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName);
 }
 else
 {
@@ -47,7 +45,7 @@ else
         //Rename XML file to inlcude date
         rename("./data/rates.xml", "./data/rates" . $ratesTimeStamp[0] . ".xml");
          //Request data from APIs and create rates.xml file
-        requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName, $currenciesAPIKey);
+        requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName);
     }   
 }
 //Defining the amount on both arrays
@@ -67,7 +65,7 @@ if ((isset($_REQUEST["from"])) && (isset($_REQUEST["to"]))  && (isset($_REQUEST[
     checkCurrencyCode($countryFrom);
     checkCurrencyCode($countryTo);
     //Checking if the amnt value is a decimal point
-    checkAmountIsFloat();
+    checkAmountIsFloat($amount);
     //Checking if the format request is either xml or json
     checkFormatGetValue();
 
@@ -77,7 +75,5 @@ else
 {
     //Output error 1200 - Currency type not recognized 
     conductErrorMessage(1200);  
-    //Terminate the current script 
-    exit();
 } 
 ?>

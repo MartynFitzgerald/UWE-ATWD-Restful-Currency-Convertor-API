@@ -13,6 +13,7 @@
 |                display for the conversion.
 |
 *===========================================================================*/
+include '../functions.php';
 //Defining get parameters 
 $getPreDefinedParameters = ["cur","action"];
 
@@ -20,11 +21,11 @@ $cur = $_REQUEST["cur"];
 $action = $_REQUEST["action"];
 
 //Checking if the to and from values are a currency type recognized
-checkCurrencyCode($cur);
+checkCurrencyCodeToXML($cur);
 
 if ($action === "post")
 {
-
+    conductPostMessage($action, $cur);
 }
 else if ($action === "put")
 {
@@ -36,6 +37,7 @@ else if ($action === "del")
 }
 else
 {
-    //wrong action given...
+    //Output error 2000 - Action not recognized or is missing
+    conductErrorMessage(2000); 
 }
 ?>
