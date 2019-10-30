@@ -29,7 +29,7 @@ date_default_timezone_set("Europe/London");
 if (!file_exists('./data/'. $xmlFileName))
 {
     //Request data from APIs and create rates.xml file
-    requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName);
+    initializeDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName);
 }
 else
 {
@@ -44,8 +44,8 @@ else
     {
         //Rename XML file to inlcude date
         rename("./data/rates.xml", "./data/rates" . $ratesTimeStamp[0] . ".xml");
-         //Request data from APIs and create rates.xml file
-        requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName);
+        //Request data from APIs and create rates.xml file
+        updateDataFromAPI($rates, $xmlFileName);
     }   
 }
 //Defining the amount on both arrays

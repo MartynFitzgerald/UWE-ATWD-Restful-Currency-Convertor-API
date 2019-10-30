@@ -186,13 +186,31 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
     $dom->save('./data/'. $xmlFileName);
 }
 //Get the data from api and inialized rates XML
-function requestDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName) {
+function initializeDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName) {
     //Call function to get current currencies information from the API
     $currentCurrencies = getCurrencies();
     //Setting the rates of all currency rates to the a varible.
     $currencies = $currentCurrencies["rates"];
     //Call function to create new rates file
     initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $currencies);
+}
+//Get the data from api and inialized rates XML
+function updateDataFromAPI($rates, $xmlFileName) {
+    $currenciesISOCodes = [];
+    //Call function to get current currencies information from the API
+    $currentCurrencies = getCurrencies();
+    //Setting the rates of all currency rates to the a varible.
+    $currencies = $currentCurrencies["rates"];
+    //Get timestamp from rates file.
+    $baseCurrency = $rates->xpath("/currencies/@base");
+    //Getting the currency from the XML data file
+    $currencies = $rates->xpath("/currencies/currency/@code");
+    //Go throuhg all currencies codes that are in the file and add them into a array.
+    foreach ($currencies as $currency) {
+        array_push($currenciesISOCodes, (string) $currency->code);
+    }
+    //Call function to create new rates file
+    initializeRatesXML($currenciesISOCodes, $baseCurrency[0], $xmlFileName, $currencies);
 }
 //Check if the parameters in the GET method are correct to the ones pre defined
 function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefinedParameters) {
