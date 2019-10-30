@@ -33,7 +33,7 @@ else if ($action === "put")
 }
 else if ($action === "del")
 {
-
+    conductDeleteCurrency($action, $cur);
 }
 else
 {
