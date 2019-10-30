@@ -11,8 +11,6 @@
 |  Description:  Creating functions used in both of the index.php file
 |
 *===========================================================================*/
-// API key for the currencies, allows me to get live information.
-$currenciesAPIKey = "313f82e98f94595c11df26da43b9835f";
 //Function to output json to the user
 function displayJSON($json) {
     header('Content-Type: application/json');
@@ -140,19 +138,19 @@ function getCountries(){
     //Check if we don't have valid XML file
     if ($xml === false) {
         //Send error message to user and then kill the service
-        conductErrorMessage(1500, "Error in service");
+        conductErrorMessage(1500);
     }
     return $xml;
 }
 //Get list of the currencies and their rates at current time.
 function getCurrencies() {
     //Getting current currencies information from the API. @ is suppress wearning so we can handle myself.
-    $json = @file_get_contents('http://data.fixer.io/api/latest?access_key='. $currenciesAPIKey);
+    $json = @file_get_contents('http://data.fixer.io/api/latest?access_key=313f82e98f94595c11df26da43b9835f');
     $jsonFormatted = json_decode($json, true);
     //Check if we don't have valid XML file
     if ($json === false || $jsonFormatted["success"] === false) {
         //Send error message to user and then kill the service
-        conductErrorMessage(1500, "Error in service");
+        conductErrorMessage(1500);
     }
     return $jsonFormatted;
 }
@@ -298,9 +296,19 @@ function conductConvMessage($countryFrom, $countryTo, $amount, $format){
 
     convertArrayToFormatForOutput($outputNode);
 }
+//Get currency rate in the rates API.
+function getNewCurrencyRate($cur){
+    //Getting currencies information from the APi.
+    $currencies = getCurrencies();
+    
+    //Setting the rates of all currency rates to the a varible.
+    return ($currencies["rates"][$cur] / $currencies["rates"]["GBP"]);
+}
 //Update currency rate in the rates file.
 function updateCurrencyRate($cur){
-
+    
+    //Setting the rates of all currency rates to the a varible.
+    return ($currencies["rates"][$cur] / $currencies["rates"]["GBP"]);
 }
 //Display the currency conversion to the user and do the calulation to get value.
 function conductPostMessage($action, $cur){
@@ -308,18 +316,21 @@ function conductPostMessage($action, $cur){
     $countries = getCountries();
     //Getting contries information from the file stored locally.
     $rates = getRates();
-    //Getting currencies information from the APi.
-    $currencies = getCurrencies();
-    
-    //Setting the rates of all currency rates to the a varible.
-    $currencies = $currentCurrencies["rates"];
+    //Update currency rate in the rates file.
+    $currencies = getNewCurrencyRate($cur);
+
+    $ts = $rates->xpath("/currencies/@ts");
 
     //Getting the currency rate from the XML data file
-    $rateTo = $rates->xpath("/currencies/currency[@code='". $cur ."']/@rate");
-    $ts = $rates->xpath("/currencies/@ts");
+    $rate = $rates->xpath("/currencies/currency[@code='". $cur ."']/@rate");
+    $oldRate = (float) $rate[0]->rate;
+    $rate[0]->rate = $currencies; 
+    //echo $rates->asXml();
+    // save the values in a new xml
+    file_put_contents('./data/rates.xml',$rates->saveXML());
     
     $curArray = array("code"=> $cur, "name"=> (string) getCurrencyName($countries, $cur), "loc"=> getCurrencyLocationsFormatted($countries, $cur));
-    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $rateTo[0], "old_rate"=> $rateTo[0], "curr"=> $curArray);
+    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $currencies, "old_rate"=> $oldRate, "curr"=> $curArray);
 
     $outputNode = constructOutputArray($dataArray, "action");
 
