@@ -87,22 +87,18 @@ function outputErrorMessageResponse($errorCode, $message = null){
 //Get list of the rates.
 function getRatesFromDataFile(){
     //Getting rates information from the file stored locally. @ is suppress wearning so we can handle myself.
-    
-    if (is_file('./data/' . $GLOBALS['ratesFilename'])) {
-        $xml = @simplexml_load_file('./data/' . $GLOBALS['ratesFilename']);
-    }
-    else {
-        $xml = @simplexml_load_file('../data/'. $GLOBALS['ratesFilename']);
-    }
-
-    return $xml;
-
-    //Check if we don't have valid XML file
-    /*if ($xml === false) {
-        //Send error message to user and then kill the service
+    try {
+        if (is_file('./data/' . $GLOBALS['ratesFilename'])) {
+            $xml = @simplexml_load_file('./data/' . $GLOBALS['ratesFilename']);
+        }
+        else {
+            $xml = @simplexml_load_file('../data/'. $GLOBALS['ratesFilename']);
+        }
+    } catch (Exception $e) {
+        //rates does not exist - even after trying to create the file
         outputErrorMessageResponse(1500, "Error in service");
     }
-    return $xml;*/
+    return $xml;
 }
 //Get list of the errors.
 function getErrorsFromDataFile(){
@@ -199,13 +195,11 @@ function updateDataFromAPI($currentRates) {
     //Call function to get current currencies information from the API
     $currentCurrencies = getCurrencyRatesFromExternalAPI();
     //Setting the rates of all currency rates to the a varible.
-    $currencies = $currentCurrencies["rates"];
-    //Get timestamp from rates file.
-    //$baseCurrency = $rates->xpath("/currencies/@base");
+    $currencies = $currentCurrencies["rates"];  
     //Getting the currency from the XML data file
-    $currencies = $currentRates->xpath("/currencies/currency/@code");
+    $currenciesCodes = $currentRates->xpath("/currencies/currency/@code");
     //Go throuhg all currencies codes that are in the file and add them into a array.
-    foreach ($currencies as $currency) {
+    foreach ($currenciesCodes as $currency) {
         array_push($currenciesISOCodes, (string) $currency->code);
     }
     //Call function to create new rates file
