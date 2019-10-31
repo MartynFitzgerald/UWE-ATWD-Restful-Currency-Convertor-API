@@ -11,32 +11,16 @@
 |  Description:  Creating functions used in both of the index.php file
 |
 *===========================================================================*/
-//Function to output json to the user
-function displayJSON($json) {
-    header('Content-Type: application/json');
-    echo $json;
-}
-//Function to output XML to the user
-function displayXML($dom) {
-    header('Content-Type: text/xml');
-    echo $dom->asXML();
-}
-//Function to contruct the array with the main node within the output.
-function constructOutputArray($dataNode, $type) {
-    if($type === "error") {
-        $errorNode = array("error"=>$dataNode);
-        $outputNode = array("conv"=>$errorNode);
-    }
-    else if($type === "conv") {
-        $outputNode = array("conv"=>$dataNode);
-    }
-    else if($type === "action") {
-        $outputNode = array("action"=>$dataNode);
-    }
-    return $outputNode;
-}
 //Function defination to convert array to xml
 //source: https://www.codexworld.com/convert-array-to-xml-in-php/
+
+$GLOBALS['ratesFilename'] = 'rates.xml';
+
+function archiveRatesFile($timeStampSuffix) {
+    //Rename XML file to inlcude date
+    copy("./data/" . $GLOBALS['ratesFilename'], "./data/rates" . $timeStampSuffix . ".xml");
+}
+
 function arrayToXML($array, &$xml_user_info) {
     foreach($array as $key => $value) {
         if(is_array($value)) {
@@ -55,9 +39,9 @@ function arrayToXML($array, &$xml_user_info) {
     }
 }
 //This is converts the PHP array to XML or JSON depending on request  
-function convertArrayToFormatForOutput($outputNode, $actionType = null) {
+function convertArrayToFormatForOutput($format, $outputNode, $actionType = null) {
     //Default to XML if json isn't specified  
-    if (@$_REQUEST["format"] === "json") {
+    /*if (@$_REQUEST["format"] === "json") {
         $outputJSON = json_encode($outputNode);
         displayJSON($outputJSON);
     }
@@ -68,12 +52,29 @@ function convertArrayToFormatForOutput($outputNode, $actionType = null) {
         
         arrayToXML($outputNode[$firstNodeKey],$xml);
         displayXML($xml);
-    } 
+    }*/
+
+    if ($format == "json") {
+        $outputJSON = json_encode($outputNode);
+        //displayJSON($outputJSON);
+
+        header('Content-Type: application/json');
+        echo $outputJSON;
+    } else {
+        $firstNodeKey = array_keys($outputNode)[0];
+
+        $xml = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . " type='". $actionType  ."'></" . $firstNodeKey . ">");
+        
+        arrayToXML($outputNode[$firstNodeKey],$xml);
+        //displayXML($xml);
+        header('Content-Type: text/xml');
+        echo $dom->asXML();
+    }
 }
 //Search list of the errors with the code to get the message.
-function searchForError($errorCode){
+function getErrorMessageByErrorCode($errorCode){
     //Getting errors information from the file stored locally.
-    $errors = getErrors();
+    $errors = getErrorsFromDataFile();
 
     //Getting the error message from the XML data file
     $errorMessage = $errors->xpath("/errors/error[code='" . $errorCode . "']/message");
@@ -81,37 +82,44 @@ function searchForError($errorCode){
     return $errorMessage[0];
 }
 //
-function conductErrorMessage($errorCode, $message = null){
+function outputErrorMessageResponse($errorCode, $message = null){
     if ($message == null) {
-        $message = searchForError($errorCode);
+        $message = getErrorMessageByErrorCode($errorCode);
     }
         
     $dataArray = array("code"=>$errorCode, "msg"=>(string) $message);
 
-    $outputNode = constructOutputArray($dataArray, "error");
+    $errorNode = array("error"=>$dataNode);
+    $outputNode = array("conv"=>$errorNode);
+
+    //$outputNode = constructOutputArray($dataArray, "error");
 
     convertArrayToFormatForOutput($outputNode); 
     //Terminate the current script 
     exit();
 }
 //Get list of the rates.
-function getRates(){
+function getRatesFromDataFile(){
     //Getting rates information from the file stored locally. @ is suppress wearning so we can handle myself.
-    if (is_file('./data/rates.xml')) {
-        $xml = @simplexml_load_file('./data/rates.xml');
+    
+    if (is_file('./data/' . $GLOBALS['ratesFilename'])) {
+        $xml = @simplexml_load_file('./data/' . $GLOBALS['ratesFilename']);
     }
     else {
-        $xml = @simplexml_load_file('../data/rates.xml');
+        $xml = @simplexml_load_file('../data/'. $GLOBALS['ratesFilename']);
     }
-    //Check if we don't have valid XML file
-    if ($xml === false) {
-        //Send error message to user and then kill the service
-        conductErrorMessage(1500, "Error in service");
-    }
+
     return $xml;
+
+    //Check if we don't have valid XML file
+    /*if ($xml === false) {
+        //Send error message to user and then kill the service
+        outputErrorMessageResponse(1500, "Error in service");
+    }
+    return $xml;*/
 }
 //Get list of the errors.
-function getErrors(){
+function getErrorsFromDataFile(){
     //Getting errors information from the file stored locally. @ is suppress wearning so we can handle myself.
     if (is_file('./data/errors.xml')) {
         $xml = @simplexml_load_file('./data/errors.xml');
@@ -122,12 +130,12 @@ function getErrors(){
     //Check if we don't have valid XML file
     if ($xml === false) {
         //Send error message to user and then kill the service
-        conductErrorMessage(1500, "Error in service");
+        outputErrorMessageResponse(1500, "Error in service");
     }
     return $xml;
 }
 //Get list of the contries that support all of the currencies. Also declaring the return to SimpleXMLElement in this function.
-function getCountries(){
+function getCountriesFromDataFile(){
     //Getting contries information from the file stored locally. @ is suppress wearning so we can handle myself.
     if (is_file('./data/countries.xml')) {
         $xml = @simplexml_load_file('./data/countries.xml');
@@ -138,24 +146,27 @@ function getCountries(){
     //Check if we don't have valid XML file
     if ($xml === false) {
         //Send error message to user and then kill the service
-        conductErrorMessage(1500);
+        outputErrorMessageResponse(1500);
     }
     return $xml;
 }
 //Get list of the currencies and their rates at current time.
-function getCurrencies() {
+function getCurrencyRatesFromExternalAPI() {
     //Getting current currencies information from the API. @ is suppress wearning so we can handle myself.
     $json = @file_get_contents('http://data.fixer.io/api/latest?access_key=313f82e98f94595c11df26da43b9835f');
     $jsonFormatted = json_decode($json, true);
     //Check if we don't have valid XML file
     if ($json === false || $jsonFormatted["success"] === false) {
         //Send error message to user and then kill the service
-        conductErrorMessage(1500);
+        outputErrorMessageResponse(1500);
     }
     return $jsonFormatted;
 }
 //Initialize rates file if there isnt one already
-function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $currencies) {
+function initializeRatesXML($currenciesISOCodes, $currencies) {
+    //Base currency for the rates stored.
+    $baseCurrency = "GBP";
+
     //Creating timestamp for when created in XML document
     $timeStamp =  time();
     //Create XML Document
@@ -183,34 +194,38 @@ function initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $c
         $root->appendChild($itemNode);
     }
     //Saving XML document to the filename defined above
-    $dom->save('./data/'. $xmlFileName);
+    $dom->save('./data/'. $GLOBALS['ratesFilename']);
 }
 //Get the data from api and inialized rates XML
-function initializeDataFromAPI($currenciesISOCodes, $baseCurrency, $xmlFileName) {
+function initializeDataFromAPI() {
+
+    //This array holds the predefined rates for the application. 
+    $currenciesISOCodes = ["AUD","BRL","CAD","CHF","CNY","DKK","EUR","GBP","HKD","HUF","INR","JPY","MXN","MYR","NOK","NZD","PHP","RUB","SEK","SGD","THB","TRY","USD","ZAR"];
+
     //Call function to get current currencies information from the API
-    $currentCurrencies = getCurrencies();
+    $currentCurrencies = getCurrencyRatesFromExternalAPI();
     //Setting the rates of all currency rates to the a varible.
     $currencies = $currentCurrencies["rates"];
     //Call function to create new rates file
-    initializeRatesXML($currenciesISOCodes, $baseCurrency, $xmlFileName, $currencies);
+    initializeRatesXML($currenciesISOCodes, $currencies);
 }
 //Get the data from api and inialized rates XML
-function updateDataFromAPI($rates, $xmlFileName) {
+function updateDataFromAPI($currentRates) {
     $currenciesISOCodes = [];
     //Call function to get current currencies information from the API
-    $currentCurrencies = getCurrencies();
+    $currentCurrencies = getCurrencyRatesFromExternalAPI();
     //Setting the rates of all currency rates to the a varible.
     $currencies = $currentCurrencies["rates"];
     //Get timestamp from rates file.
-    $baseCurrency = $rates->xpath("/currencies/@base");
+    //$baseCurrency = $rates->xpath("/currencies/@base");
     //Getting the currency from the XML data file
-    $currencies = $rates->xpath("/currencies/currency/@code");
+    $currencies = $currentRates->xpath("/currencies/currency/@code");
     //Go throuhg all currencies codes that are in the file and add them into a array.
     foreach ($currencies as $currency) {
         array_push($currenciesISOCodes, (string) $currency->code);
     }
     //Call function to create new rates file
-    initializeRatesXML($currenciesISOCodes, $baseCurrency[0], $xmlFileName, $currencies);
+    initializeRatesXML($currenciesISOCodes, $currencies);
 }
 //Check if the parameters in the GET method are correct to the ones pre defined
 function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefinedParameters) {
@@ -229,7 +244,7 @@ function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefin
                     //If not then check if it has cycled through all of the pre-definedexpected parameters 
                     if ($j >= $amountOfGetParameters - 1) {
                         //Output error 1100 - Parameter not recognized
-                        conductErrorMessage(1100); 
+                        outputErrorMessageResponse(1100); 
                     }
                 }
             }
@@ -237,152 +252,75 @@ function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefin
     }
     else if ($amountOfGetKeys > $amountOfGetParameters) {
         //Output error 1100 - Parameter not recognized
-        conductErrorMessage(1100); 
+        outputErrorMessageResponse(1100); 
     }
     else if ($amountOfGetKeys < $amountOfGetParameters) {
         //Output error 1000 - Required parameter is missing
-        conductErrorMessage(1000); 
+        outputErrorMessageResponse(1000); 
     }
 }
 //Checking if they have given me a format that is allowed.
 function checkFormatGetValue() {
     if (!(@$_REQUEST["format"] == "xml" || @$_REQUEST["format"] == "json")) {
         //Output error 1400 - Format must be xml or json 
-        conductErrorMessage(1400);
+        outputErrorMessageResponse(1400);
     }
 }
+
+function checkFormatIsXmlOrJson($format) {
+    return $format == "xml" || $format == "json";
+}
+
 //Checking if the amount given is a float. 
 function checkAmountIsFloat($value) {
     if (!(is_numeric($value ) || floor($value ) != $value)) {
         //Output error 1300 - Currency amount must be a decimal number 
-        conductErrorMessage(1300); 
+        outputErrorMessageResponse(1300); 
     }
 }
 //check if the currency code is valid to rates.
-function checkCurrencyCode($currencyCode) {
-    //Getting contries information from the file stored locally.
-    $rates = getRates();
+function checkCurrencyCode($rates, $currencyCode) {
     //Getting the currency code from the XML data file
     $ratesCode = $rates->xpath("/currencies/currency[@code='". $currencyCode ."']/@code");
     //If the Xpath returned false then show error
     if (!@$ratesCode[0] == $currencyCode) {   
         //Output error 1200 - Currency type not recognized 
-        conductErrorMessage(1200);  
+        outputErrorMessageResponse(1200);  
     }
 }
 //check if the currency code is valid to countries.
 function checkCurrencyCodeToXML($currencyCode) {
     //Getting contries information from the file stored locally.
-    $countries = getCountries();
+    $countries = getCountriesFromDataFile();
     //Getting the currency code from the XML data file
     $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='". $currencyCode ."']/Ccy");
     //If the Xpath returned false then show error
     if (!@$currencyLocations[0] == $currencyCode) {  
         //Output error 2200 - Currency code not found for update 
-        conductErrorMessage(2200);  
+        outputErrorMessageResponse(2200);  
     }
 }
-function getCurrencyName($countries, $currencyCode){
+
+function getCountryNameForCurrencyCode($countries, $currencyCode){
     //Getting the currency name from the XML data file
-    $currencyName = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currencyCode . "']/CcyNm");
-    return $currencyName[0];
+    $countryName = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currencyCode . "']/CcyNm");
+    return $countryName[0];
 }
-function getCurrencyLocationsFormatted($countries, $currencyCode){
+function getCountryLocationForCurrencyCode($countries, $currencyCode){
     //Getting the currency name from the XML data file
     $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currencyCode . "']/CtryNm");
     //Formatted the locations to put them into a string and also capitalization the first letter within a word
-    $currencyLocationsFormatted = ucwords(strtolower(implode(", ",$currencyLocations)));
-    return $currencyLocationsFormatted;
+    $countryLocation = ucwords(strtolower(implode(", ",$currencyLocations)));
+    return $countryLocation;
 }
-//Display the currency conversion to the user and do the calulation to get value.
-function conductConvMessage($countryFrom, $countryTo, $amount, $format){
-    //Getting contries information from the file stored locally.
-    $countries = getCountries();
-    //Getting contries information from the file stored locally.
-    $rates = getRates();
-    //Getting the currency rate from the XML data file
-    $rateTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']/@rate");
-    $ts = $rates->xpath("/currencies/@ts");
 
-    $amountCalculation = round($rateTo[0] * $amount, 2);
-    
-    $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCurrencyName($countries, $countryFrom), "loc"=> getCurrencyLocationsFormatted($countries, $countryFrom), "amnt"=> (float) $amount);
-    $toArray = array("code"=> $countryTo, "curr"=> (string) getCurrencyName($countries, $countryTo), "loc"=> getCurrencyLocationsFormatted($countries, $countryTo), "amnt"=> $amountCalculation);
-    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $rateTo[0], "from"=> $fromArray, "to"=> $toArray);
-
-    $outputNode = constructOutputArray($dataArray, "conv");
-
-    convertArrayToFormatForOutput($outputNode);
-}
 //Get currency rate in the rates API.
 function getNewCurrencyRate($cur){
     //Getting currencies information from the APi.
-    $currencies = getCurrencies();
+    $currencies = getCurrencyRatesFromExternalAPI();
     
     //Setting the rates of all currency rates to the a varible.
     return ($currencies["rates"][$cur] / $currencies["rates"]["GBP"]);
 }
-//Display the new currency rate to the user and do the calulation to get value.
-function conductPostMessage($action, $cur){
-    if ($cur == "GBP")
-    {
-        //Output error 2400 - Cannot update base currency
-        conductErrorMessage(2400); 
-    }
-    //Getting contries information from the file stored locally.
-    $countries = getCountries();
-    //Getting contries information from the file stored locally.
-    $rates = getRates();
-    //Update currency rate in the rates file.
-    $currencyRate = getNewCurrencyRate($cur);
-    //Get timestamp from rates file.
-    $ts = $rates->xpath("/currencies/@ts");
-    //Getting the currency rate from the XML data file
-    $rate = $rates->xpath("/currencies/currency[@code='". $cur ."']/@rate");
-    //Set old rate to varible to store.
-    $oldRate = (float) $rate[0]->rate;
-    //Make node attrube @rate equal to the new rate for that currency
-    $rate[0]->rate = $currencyRate; 
-    //If the values of the rates are not the same then show difference otherwise show error.
-    if (!(float) $rate[0]->rate == $oldRate) {
-        //Save the values in the rates.xml
-        file_put_contents('../data/rates.xml', $rates->saveXML());
-        //Contruct arrays with the data above
-        $curArray = array("code"=> $cur, "name"=> (string) getCurrencyName($countries, $cur), "loc"=> getCurrencyLocationsFormatted($countries, $cur));
-        $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $currencyRate, "old_rate"=> $oldRate, "curr"=> $curArray);
-        //Add the main node depending on function
-        $outputNode = constructOutputArray($dataArray, "action");
-        //Convert array to the formatted out put, default xml.
-        convertArrayToFormatForOutput($outputNode, "post");
-    } else {
-        //might need error code here
-    }
-}
-//Display the deleted currency to the user.
-function conductDeleteCurrency($action, $cur){
-    //Getting contries information from the file stored locally.
-    $rates = getRates();
-    //Get timestamp from rates file.
-    $ts = $rates->xpath("/currencies/@ts");
-    //Getting the currency from the XML data file
-    $currency = $rates->xpath("/currencies/currency[@code='". $cur ."']");
-    if(!$currency == false)
-    {
-        //Unset curreny specified from the xml
-        unset($currency[0][0]);
-        //Save the values in the rates.xml
-        file_put_contents('../data/rates.xml', $rates->saveXML());
-        //Contruct arrays with the data above
-        $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "code"=> $cur);
-        //Add the main node depending on function
-        $outputNode = constructOutputArray($dataArray, "action");
-        //Convert array to the formatted out put, default xml.
-        convertArrayToFormatForOutput($outputNode, "del");
-    }
-    else
-    {
-        //Output error 2300 - No rate listed for this currency
-        conductErrorMessage(2300); 
-    }
-}
+
 ?>
