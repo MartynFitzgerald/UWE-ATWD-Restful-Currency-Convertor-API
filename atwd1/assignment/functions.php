@@ -41,19 +41,6 @@ function arrayToXML($array, &$xml_user_info) {
 //This is converts the PHP array to XML or JSON depending on request  
 function convertArrayToFormatForOutput($format, $outputNode, $actionType = null) {
     //Default to XML if json isn't specified  
-    /*if (@$_REQUEST["format"] === "json") {
-        $outputJSON = json_encode($outputNode);
-        displayJSON($outputJSON);
-    }
-    else { 
-        $firstNodeKey = array_keys($outputNode)[0];
-
-        $xml = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . " type='". $actionType  ."'></" . $firstNodeKey . ">");
-        
-        arrayToXML($outputNode[$firstNodeKey],$xml);
-        displayXML($xml);
-    }*/
-
     if ($format == "json") {
         $outputJSON = json_encode($outputNode);
         //displayJSON($outputJSON);
@@ -88,7 +75,6 @@ function outputErrorMessageResponse($errorCode, $message = null){
     }
         
     $dataArray = array("code"=>$errorCode, "msg"=>(string) $message);
-
     $errorNode = array("error"=>$dataNode);
     $outputNode = array("conv"=>$errorNode);
 
@@ -198,10 +184,8 @@ function initializeRatesXML($currenciesISOCodes, $currencies) {
 }
 //Get the data from api and inialized rates XML
 function initializeDataFromAPI() {
-
     //This array holds the predefined rates for the application. 
     $currenciesISOCodes = ["AUD","BRL","CAD","CHF","CNY","DKK","EUR","GBP","HKD","HUF","INR","JPY","MXN","MYR","NOK","NZD","PHP","RUB","SEK","SGD","THB","TRY","USD","ZAR"];
-
     //Call function to get current currencies information from the API
     $currentCurrencies = getCurrencyRatesFromExternalAPI();
     //Setting the rates of all currency rates to the a varible.
@@ -266,11 +250,10 @@ function checkFormatGetValue() {
         outputErrorMessageResponse(1400);
     }
 }
-
+// Checking the format and retunr it.
 function checkFormatIsXmlOrJson($format) {
     return $format == "xml" || $format == "json";
 }
-
 //Checking if the amount given is a float. 
 function checkAmountIsFloat($value) {
     if (!(is_numeric($value ) || floor($value ) != $value)) {
@@ -300,12 +283,13 @@ function checkCurrencyCodeToXML($currencyCode) {
         outputErrorMessageResponse(2200);  
     }
 }
-
+//Get the currency's country name.
 function getCountryNameForCurrencyCode($countries, $currencyCode){
     //Getting the currency name from the XML data file
     $countryName = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currencyCode . "']/CcyNm");
     return $countryName[0];
 }
+//Get the currency's locations where it's used.
 function getCountryLocationForCurrencyCode($countries, $currencyCode){
     //Getting the currency name from the XML data file
     $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currencyCode . "']/CtryNm");
@@ -313,14 +297,11 @@ function getCountryLocationForCurrencyCode($countries, $currencyCode){
     $countryLocation = ucwords(strtolower(implode(", ",$currencyLocations)));
     return $countryLocation;
 }
-
 //Get currency rate in the rates API.
 function getNewCurrencyRate($cur){
     //Getting currencies information from the APi.
     $currencies = getCurrencyRatesFromExternalAPI();
-    
     //Setting the rates of all currency rates to the a varible.
     return ($currencies["rates"][$cur] / $currencies["rates"]["GBP"]);
 }
-
 ?>
