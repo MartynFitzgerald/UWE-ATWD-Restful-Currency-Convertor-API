@@ -11,16 +11,12 @@
 |  Description:  Creating functions used in both of the index.php file
 |
 *===========================================================================*/
-//Function defination to convert array to xml
-//source: https://www.codexworld.com/convert-array-to-xml-in-php/
-
-$GLOBALS['ratesFilename'] = 'rates.xml';
-
 function archiveRatesFile($timeStampSuffix) {
     //Rename XML file to inlcude date
     copy("./data/" . $GLOBALS['ratesFilename'], "./data/rates" . $timeStampSuffix . ".xml");
 }
-
+//Function defination to convert array to xml
+//source: https://www.codexworld.com/convert-array-to-xml-in-php/
 function arrayToXML($array, &$xml_user_info) {
     foreach($array as $key => $value) {
         if(is_array($value)) {
