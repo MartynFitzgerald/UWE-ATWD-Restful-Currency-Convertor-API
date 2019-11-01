@@ -237,13 +237,6 @@ function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefin
         outputErrorMessageResponse(1000); 
     }
 }
-//Checking if they have given me a format that is allowed.
-function checkFormatGetValue() {
-    if (!(@$_REQUEST["format"] == "xml" || @$_REQUEST["format"] == "json")) {
-        //Output error 1400 - Format must be xml or json 
-        outputErrorMessageResponse(1400);
-    }
-}
 // Checking the format and retunr it.
 function checkFormatIsXmlOrJson($format) {
     return $format == "xml" || $format == "json";
@@ -260,7 +253,7 @@ function checkCurrencyCode($rates, $currencyCode) {
     //Getting the currency code from the XML data file
     $ratesCode = $rates->xpath("/currencies/currency[@code='". $currencyCode ."']/@code");
     //If the Xpath returned false then show error
-    if (!@$ratesCode[0] == $currencyCode) {   
+    if (@$ratesCode[0] != $currencyCode) {   
         //Output error 1200 - Currency type not recognized 
         outputErrorMessageResponse(1200);  
     }
@@ -272,7 +265,7 @@ function checkCurrencyCodeToXML($currencyCode) {
     //Getting the currency code from the XML data file
     $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='". $currencyCode ."']/Ccy");
     //If the Xpath returned false then show error
-    if (!@$currencyLocations[0] == $currencyCode) {  
+    if (@$currencyLocations[0] != $currencyCode) {  
         //Output error 2200 - Currency code not found for update 
         outputErrorMessageResponse(2200);  
     }

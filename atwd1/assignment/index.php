@@ -26,13 +26,18 @@ if (!$countryFrom || !$countryTo || !$amount) {
     // maybe make a function "productParametersMissingError"
     outputErrorMessageResponse(1000);
 }
-
 // if $format is blank return a 1100 error code as XML?
 if (!$format) {
     outputErrorMessageResponse(1100);
 }
 
+// This should check to see if the value is a decimal and not a float
+checkAmountIsFloat($amount);
+//Check format is XML or JSON
+checkFormatIsXmlOrJson($format);
+
 $rates = getRatesFromDataFile();
+
 if ($rates == false) {
     initializeDataFromAPI($rates);
 }
@@ -51,13 +56,9 @@ else
     }
 }
 
+$rates = getRatesFromDataFile();
 checkCurrencyCode($rates, $countryFrom);
 checkCurrencyCode($rates, $countryTo);
-
-// This should check to see if the value is a decimal and not a float
-checkAmountIsFloat($amount);
-
-checkFormatIsXmlOrJson($format);
 
 $countries = getCountriesFromDataFile();
 
