@@ -22,8 +22,9 @@ $GLOBALS['ratesFilename'] = 'rates.xml';
 function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format){
     //Getting the currency rate from the XML data file
     $rateTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']/@rate");
+    //Getting timestamp from document
     $ts = $rates->xpath("/currencies/@ts");
-    //Calculating the 
+    //Calculating the conversion.
     $amountCalculation = round($rateTo[0] * $amount, 2);
     //Build the PHP array so we can convertit too xml or json.
     $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryFrom), "loc"=> getCountryLocationForCurrencyCode($countries, $countryFrom), "amnt"=> (float) $amount);
@@ -53,33 +54,33 @@ checkAmountIsFloat($amount);
 checkFormatIsXmlOrJson($format);
 //Setting value outside the ifstatement to allow us to access rates below the if statement.
 $rates = null;
-
+//Check if file doesn't exists and then create file or read that file.
 if (!file_exists('./data/'. $GLOBALS['ratesFilename']))
 {
+    //Create rates file
     initializeDataFromAPI();
+    //Request the rates information form file
     $rates = getRatesFromDataFile();
-}
-else
-{
+} else {
+    //Request the rates information form file
     $rates = getRatesFromDataFile();
     //Getting the currency name from the XML data file
-    $ratesTimeStamp = $rates->xpath("/currencies/@ts");
+    $timeStamp = $rates->xpath("/currencies/@ts");
     //Formatting the timestamp to the date format
-    $formatTimeStamp = date('d F Y H:i',  substr($ratesTimeStamp[0], 0, 10));
-
-    if($ratesTimeStamp[0] <= strtotime("-2 hours")) {
-        //Rename XML file to inlcude date
-        archiveRatesFile($ratesTimeStamp[0]);
-        //Request data from APIs and create rates.xml file
+    $formatTimeStamp = date('d F Y H:i',  substr($timeStamp[0], 0, 10));
+    //Checking to if the current time is above 2 hours from the time stamp stored.
+    if($timeStamp[0] <= strtotime("-2 hours")) {
+        //Rename XML file to inlcude date.
+        archiveRatesFile($timeStamp[0]);
+        //Request data from APIs and create rates.xml file.
         updateDataFromAPI($rates);
     }
 }
-
+//Checking currency code to the rates.xml file.
 checkCurrencyCode($rates, $countryFrom);
 checkCurrencyCode($rates, $countryTo);
-
+//Request the countries information form file.
 $countries = getCountriesFromDataFile();
-
+//Produce conversion message to user.
 conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format);
-
 ?>
