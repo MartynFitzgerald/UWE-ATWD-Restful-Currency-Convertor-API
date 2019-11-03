@@ -204,42 +204,35 @@ function updateDataFromAPI($currentRates) {
     initializeRatesXML($currenciesISOCodes, $currencies);
 }
 //Check if the parameters in the GET method are correct to the ones pre defined
-function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefinedParameters) {
+function checkParametersAreRecognized() {
+    //Defining expected GET parameters 
+    $getPreDefinedParameters = ["from","to","amnt","format"];
+    //Get the amount of values within the parameters expected
+    $amountOfGetParameters = sizeof($getPreDefinedParameters);
+    //Get the amount of values within the current parameters
+    $amountOfGetKeys = sizeof(array_keys($_REQUEST));
     //Check if there is the wrong amount of parameters
-    if ($amountOfGetKeys == $amountOfGetParameters) {
-        //Cycle through all of the HTTP GET Request keys
-        for($i = 0; $i < $amountOfGetKeys; $i++) {
-            //Cycle through all of the pre-defined expected parameters 
-            for($j = 0; $j < $amountOfGetParameters; $j++) {
-                //Check if the HTTP GET Request key equals to the expected parameter
-                if (array_keys($_REQUEST)[$i] == $getPreDefinedParameters[$j]) {
-                    //If it does then break out of the first for loop to move on to the next HTTP GET Request key
-                    break;
-                }
-                else {
-                    //If not then check if it has cycled through all of the pre-definedexpected parameters 
-                    if ($j >= $amountOfGetParameters - 1) {
-                        //Output error 1100 - Parameter not recognized
-                        outputErrorMessageResponse(1100); 
-                    }
+    for($i = 0; $i < $amountOfGetKeys; $i++) {
+        //Cycle through all of the pre-defined expected parameters 
+        for($j = 0; $j < $amountOfGetParameters; $j++) {
+            //Check if the HTTP GET Request key equals to the expected parameter
+            if (array_keys($_REQUEST)[$i] == $getPreDefinedParameters[$j]) {
+                //If it does then break out of the first for loop to move on to the next HTTP GET Request key
+                break;
+            } else {
+                //If not then check if it has cycled through all of the pre-definedexpected parameters 
+                if ($j >= $amountOfGetParameters - 1) {
+                    //Output error 1100 - Parameter not recognized
+                    outputErrorMessageResponse(1100); 
                 }
             }
         }
-    }
-    else if ($amountOfGetKeys > $amountOfGetParameters) {
-        //Output error 1100 - Parameter not recognized
-        outputErrorMessageResponse(1100); 
-    }
-    else if ($amountOfGetKeys < $amountOfGetParameters) {
-        //Output error 1000 - Required parameter is missing
-        outputErrorMessageResponse(1000); 
     }
 }
 // Checking the format and retunr it.
 function checkFormatIsXmlOrJson($format) {
     if ($format != "json" && $format != "xml" && $format != null){
         //Output error 1400	- Format must be xml or json
-        var_dump($format);
         outputErrorMessageResponse(1400); 
     } 
 }

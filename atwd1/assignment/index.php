@@ -39,7 +39,7 @@ $countryFrom = isset($_REQUEST["from"]) ? $_REQUEST["from"] : null;
 $countryTo = isset($_REQUEST["to"]) ? $_REQUEST["to"] : null;
 $amount = isset($_REQUEST["amnt"]) ? $_REQUEST["amnt"] : null;
 $format = isset($_REQUEST["format"]) ? $_REQUEST["format"] : null;
-//If not then output error message.
+//If the values are null then output error message.
 if (!$countryFrom || !$countryTo || !$amount) {
     // maybe make a function "productParametersMissingError"
     outputErrorMessageResponse(1000);
@@ -48,6 +48,8 @@ if (!$countryFrom || !$countryTo || !$amount) {
 checkFormatIsXmlOrJson($format);
 //This should check to see if the value is a decimal and not a float
 checkAmountIsFloat($amount);
+//Check the parameters are the ones that are expected
+checkParametersAreRecognized();
 //Setting value outside the ifstatement to allow us to access rates below the if statement.
 $rates = null;
 //Check if file doesn't exists and then create file or read that file.
