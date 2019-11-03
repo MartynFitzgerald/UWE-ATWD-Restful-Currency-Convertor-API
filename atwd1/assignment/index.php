@@ -18,6 +18,8 @@ include 'functions.php';
 $GLOBALS['ratesFilename'] = 'rates.xml';
 //Setting default timezone of the service
 @date_default_timezone_set("Europe/London");
+//Defining expected GET parameters 
+$getPreDefinedParameters = ["from","to","amnt","format"];
 //Display the currency conversion to the user and do the calulation to get value.
 function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format){
     //Getting the currency rate from the XML data file
@@ -26,7 +28,7 @@ function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amoun
     $ts = $rates->xpath("/currencies/@ts");
     //Calculating the conversion.
     $amountCalculation = round($rateTo[0] * $amount, 2);
-    //Build the PHP array so we can convertit too xml or json.
+    //Build the PHP array so we can convert it too xml or json.
     $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryFrom), "loc"=> getCountryLocationForCurrencyCode($countries, $countryFrom), "amnt"=> (float) $amount);
     $toArray = array("code"=> $countryTo, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryTo), "loc"=> getCountryLocationForCurrencyCode($countries, $countryTo), "amnt"=> $amountCalculation);
     $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $rateTo[0], "from"=> $fromArray, "to"=> $toArray);
@@ -49,7 +51,7 @@ checkFormatIsXmlOrJson($format);
 //This should check to see if the value is a decimal and not a float
 checkAmountIsFloat($amount);
 //Check the parameters are the ones that are expected
-checkParametersAreRecognized();
+checkParametersAreRecognized($getPreDefinedParameters);
 //Setting value outside the ifstatement to allow us to access rates below the if statement.
 $rates = null;
 //Check if file doesn't exists and then create file or read that file.

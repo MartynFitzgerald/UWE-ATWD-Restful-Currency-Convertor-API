@@ -17,20 +17,20 @@ function archiveRatesFile($timeStampSuffix) {
 }
 //Function defination to convert array to xml
 //source: https://www.codexworld.com/convert-array-to-xml-in-php/
-function arrayToXML($array, &$xml_user_info) {
+function arrayToXML($array, &$xmlDocument) {
     foreach($array as $key => $value) {
         if(is_array($value)) {
             if(!is_numeric($key)) {
-                $subnode = $xml_user_info->addChild("$key");
+                $subnode = $xmlDocument->addChild("$key");
                 arrayToXML($value, $subnode);
             }
             else {
-                $subnode = $xml_user_info->addChild("item$key");
+                $subnode = $xmlDocument->addChild("item$key");
                 arrayToXML($value, $subnode);
             }
         }
         else {
-            $xml_user_info->addChild("$key",htmlspecialchars("$value"));
+            $xmlDocument->addChild("$key",htmlspecialchars("$value"));
         }
     }
 }
@@ -66,18 +66,16 @@ function getErrorMessageByErrorCode($errorCode){
 
     return $errorMessage[0];
 }
-//
+//This outputs the error message to the user. Then exits out of the programe.
 function outputErrorMessageResponse($errorCode, $message = null){
+    //If message isn't declared then search for it in the errors.xml
     if ($message == null) {
         $message = getErrorMessageByErrorCode($errorCode);
     }
-        
+    //Build the PHP array so we can convert it too xml or json.
     $dataNode = array("code"=>$errorCode, "msg"=>(string) $message);
     $errorNode = array("error"=>$dataNode);
     $outputNode = array("conv"=>$errorNode);
-
-    //$outputNode = constructOutputArray($dataArray, "error");
-
     convertArrayToFormatForOutput($outputNode); 
     //Terminate the current script 
     exit();
@@ -204,9 +202,7 @@ function updateDataFromAPI($currentRates) {
     initializeRatesXML($currenciesISOCodes, $currencies);
 }
 //Check if the parameters in the GET method are correct to the ones pre defined
-function checkParametersAreRecognized() {
-    //Defining expected GET parameters 
-    $getPreDefinedParameters = ["from","to","amnt","format"];
+function checkParametersAreRecognized($getPreDefinedParameters) {
     //Get the amount of values within the parameters expected
     $amountOfGetParameters = sizeof($getPreDefinedParameters);
     //Get the amount of values within the current parameters
@@ -231,14 +227,14 @@ function checkParametersAreRecognized() {
 }
 // Checking the format and retunr it.
 function checkFormatIsXmlOrJson($format) {
-    if ($format != "json" && $format != "xml" && $format != null){
+    if ($format != "json" && $format != "xml"){
         //Output error 1400	- Format must be xml or json
         outputErrorMessageResponse(1400); 
     } 
 }
 //Checking if the amount given is a float. 
 function checkAmountIsFloat($value) {
-    if (!is_numeric($value ) || floor($value ) != $value) {
+    if (!is_numeric($value ) || floor($value) != $value) {
         //Output error 1300 - Currency amount must be a decimal number 
         outputErrorMessageResponse(1300); 
     }
