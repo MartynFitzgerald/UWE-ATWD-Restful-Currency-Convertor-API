@@ -35,7 +35,7 @@ function arrayToXML($array, &$xml_user_info) {
     }
 }
 //This is converts the PHP array to XML or JSON depending on request  
-function convertArrayToFormatForOutput($format, $outputNode, $actionType = null) {
+function convertArrayToFormatForOutput($outputNode, $format = null,$actionType = null) {
     //Default to XML if json isn't specified  
     if ($format == "json") {
         $outputJSON = json_encode($outputNode);
@@ -46,10 +46,12 @@ function convertArrayToFormatForOutput($format, $outputNode, $actionType = null)
     } else {
         $firstNodeKey = array_keys($outputNode)[0];
 
-        $xml = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . " type='". $actionType  ."'></" . $firstNodeKey . ">");
-        
-        arrayToXML($outputNode[$firstNodeKey],$xml);
-        //displayXML($xml);
+        if ($actionType != null) {
+            $dom = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . " type='". $actionType  ."'></" . $firstNodeKey . ">");
+        } else {
+            $dom = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . "></" . $firstNodeKey . ">");
+        }
+        arrayToXML($outputNode[$firstNodeKey], $dom);
         header('Content-Type: text/xml');
         echo $dom->asXML();
     }
@@ -70,7 +72,7 @@ function outputErrorMessageResponse($errorCode, $message = null){
         $message = getErrorMessageByErrorCode($errorCode);
     }
         
-    $dataArray = array("code"=>$errorCode, "msg"=>(string) $message);
+    $dataNode = array("code"=>$errorCode, "msg"=>(string) $message);
     $errorNode = array("error"=>$dataNode);
     $outputNode = array("conv"=>$errorNode);
 
@@ -96,33 +98,33 @@ function getRatesFromDataFile(){
     }
     return $xml;
 }
-//Get list of the errors.
+//Get list of the errors. 
 function getErrorsFromDataFile(){
     //Getting errors information from the file stored locally. @ is suppress wearning so we can handle myself.
-    if (is_file('./data/errors.xml')) {
-        $xml = @simplexml_load_file('./data/errors.xml');
-    }
-    else {
-        $xml = @simplexml_load_file('../data/errors.xml');
-    }
-    //Check if we don't have valid XML file
-    if ($xml === false) {
+    try {
+        if (is_file('./data/errors.xml')) {
+            $xml = @simplexml_load_file('./data/errors.xml');
+        }
+        else {
+            $xml = @simplexml_load_file('../data/errors.xml');
+        }
+    } catch (Exception $e) {
         //Send error message to user and then kill the service
         outputErrorMessageResponse(1500, "Error in service");
     }
     return $xml;
 }
-//Get list of the contries that support all of the currencies. Also declaring the return to SimpleXMLElement in this function.
+//Get list of the contries that support all of the currencies. 
 function getCountriesFromDataFile(){
     //Getting contries information from the file stored locally. @ is suppress wearning so we can handle myself.
-    if (is_file('./data/countries.xml')) {
-        $xml = @simplexml_load_file('./data/countries.xml');
-    }
-    else {
-        $xml = @simplexml_load_file('../data/countries.xml');
-    }
-    //Check if we don't have valid XML file
-    if ($xml === false) {
+    try {
+        if (is_file('./data/countries.xml')) {
+            $xml = @simplexml_load_file('./data/countries.xml');
+        }
+        else {
+            $xml = @simplexml_load_file('../data/countries.xml');
+        }
+    } catch (Exception $e) {
         //Send error message to user and then kill the service
         outputErrorMessageResponse(1500);
     }
@@ -235,11 +237,15 @@ function checkRequestKeys($amountOfGetKeys, $amountOfGetParameters, $getPreDefin
 }
 // Checking the format and retunr it.
 function checkFormatIsXmlOrJson($format) {
-    return $format == "xml" || $format == "json";
+    if ($format != "json" && $format != "xml" && $format != null){
+        //Output error 1400	- Format must be xml or json
+        var_dump($format);
+        outputErrorMessageResponse(1400); 
+    } 
 }
 //Checking if the amount given is a float. 
 function checkAmountIsFloat($value) {
-    if (!(is_numeric($value ) || floor($value ) != $value)) {
+    if (!is_numeric($value ) || floor($value ) != $value) {
         //Output error 1300 - Currency amount must be a decimal number 
         outputErrorMessageResponse(1300); 
     }

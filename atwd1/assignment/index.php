@@ -32,7 +32,7 @@ function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amoun
     $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $rateTo[0], "from"=> $fromArray, "to"=> $toArray);
     $outputNode = array("conv"=>$dataArray);
     //Convert array to format and output
-    convertArrayToFormatForOutput($format, $outputNode);
+    convertArrayToFormatForOutput($outputNode, $format);
 }
 //Checking to see if the get methods are set
 $countryFrom = isset($_REQUEST["from"]) ? $_REQUEST["from"] : null;
@@ -44,14 +44,10 @@ if (!$countryFrom || !$countryTo || !$amount) {
     // maybe make a function "productParametersMissingError"
     outputErrorMessageResponse(1000);
 }
-// if $format is blank return a 1100 error code as XML?
-if (!$format) {
-    outputErrorMessageResponse(1100);
-}
-// This should check to see if the value is a decimal and not a float
-checkAmountIsFloat($amount);
-//Check format is XML or JSON
+//Check format is XML, JSON or null
 checkFormatIsXmlOrJson($format);
+//This should check to see if the value is a decimal and not a float
+checkAmountIsFloat($amount);
 //Setting value outside the ifstatement to allow us to access rates below the if statement.
 $rates = null;
 //Check if file doesn't exists and then create file or read that file.
@@ -69,7 +65,7 @@ if (!file_exists('./data/'. $GLOBALS['ratesFilename']))
     //Formatting the timestamp to the date format
     $formatTimeStamp = date('d F Y H:i',  substr($timeStamp[0], 0, 10));
     //Checking to if the current time is above 2 hours from the time stamp stored.
-    if($timeStamp[0] <= strtotime("-2 hours")) {
+    if ($timeStamp[0] <= strtotime("-2 hours")) {
         //Rename XML file to inlcude date.
         archiveRatesFile($timeStamp[0]);
         //Request data from APIs and create rates.xml file.
