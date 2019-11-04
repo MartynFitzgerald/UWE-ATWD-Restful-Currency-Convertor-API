@@ -234,7 +234,7 @@ function checkFormatIsXmlOrJson($format) {
 }
 //Checking if the amount given is a float. 
 function checkAmountIsFloat($value) {
-    if (!is_numeric($value ) || floor($value) != $value) {
+    if (!(is_numeric($value ) || floor($value ) != $value)){
         //Output error 1300 - Currency amount must be a decimal number 
         outputErrorMessageResponse(1300); 
     }
