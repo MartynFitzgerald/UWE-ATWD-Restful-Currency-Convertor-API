@@ -15,11 +15,9 @@
 *===========================================================================*/
 require_once('config.php');
 //Functions used throught this service is located.
-include './functions.php';
+require_once('functions.php');
 //Setting global rates file name.
 $GLOBALS['ratesFilename'] = 'rates.xml';
-//Defining expected GET parameters 
-$getPreDefinedParameters = ["from","to","amnt","format"];
 //Display the currency conversion to the user and do the calulation to get value.
 function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format){
     //Getting the currency rate from the XML data file
@@ -55,7 +53,7 @@ checkParametersAreRecognized(PRE_DEFINED_GET_PARAMETERS);
 //Setting value outside the ifstatement to allow us to access rates below the if statement.
 $rates = null;
 //Check if file doesn't exists and then create file or read that file.
-if (!file_exists('./data/'. $GLOBALS['ratesFilename']))
+if (!file_exists('./data/'. RATES_FILENAME))
 {
     //Create rates file
     initializeDataFromAPI();

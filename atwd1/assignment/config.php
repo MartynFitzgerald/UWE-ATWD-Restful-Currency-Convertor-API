@@ -17,11 +17,13 @@
 define('RATES_LOCATION', 'rates.xml');
 
 //Defining expected GET parameters 
-define('PRE_DEFINED_GET_PARAMETERS', serialize (array('from', 'to', 'amnt', 'format')));
+define('PRE_DEFINED_GET_PARAMETERS', array('from', 'to', 'amnt', 'format'));
+
+define('RATES_FILENAME', 'rates.xml');
 
 define('BASE', 'GBP');
 
 define('FORMATS', serialize (array('xml', 'json')));
 
-phpinfo();
+//phpinfo();
 ?>

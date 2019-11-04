@@ -13,7 +13,7 @@
 *===========================================================================*/
 function archiveRatesFile($timeStampSuffix) {
     //Rename XML file to inlcude date
-    copy("./data/" . $GLOBALS['ratesFilename'], "./data/rates" . $timeStampSuffix . ".xml");
+    copy("./data/" . RATES_FILENAME, "./data/rates" . $timeStampSuffix . ".xml");
 }
 //Function defination to convert array to xml
 //source: https://www.codexworld.com/convert-array-to-xml-in-php/
@@ -84,11 +84,11 @@ function outputErrorMessageResponse($errorCode, $message = null){
 function getRatesFromDataFile(){
     //Getting rates information from the file stored locally. @ is suppress wearning so we can handle myself.
     try {
-        if (is_file('./data/' . $GLOBALS['ratesFilename'])) {
-            $xml = @simplexml_load_file('./data/' . $GLOBALS['ratesFilename']);
+        if (is_file('./data/' . RATES_FILENAME)) {
+            $xml = @simplexml_load_file('./data/' . RATES_FILENAME);
         }
         else {
-            $xml = @simplexml_load_file('../data/'. $GLOBALS['ratesFilename']);
+            $xml = @simplexml_load_file('../data/'. RATES_FILENAME);
         }
     } catch (Exception $e) {
         //rates does not exist - even after trying to create the file
@@ -172,7 +172,7 @@ function initializeRatesXML($currenciesISOCodes, $currencies) {
         $root->appendChild($itemNode);
     }
     //Saving XML document to the filename defined above
-    $dom->save('./data/'. $GLOBALS['ratesFilename']);
+    $dom->save('./data/'. RATES_FILENAME);
 }
 //Get the data from api and inialized rates XML
 function initializeDataFromAPI() {
