@@ -15,7 +15,9 @@
 @date_default_timezone_set("Europe/London");
 
 //Defining expected GET parameters 
-define('PRE_DEFINED_GET_PARAMETERS', array('from', 'to', 'amnt', 'format'));
+define('PRE_DEFINED_GET_PARAMETERS_CONVERSION', array('from', 'to', 'amnt', 'format'));
+//Defining expected GET parameters 
+define('PRE_DEFINED_GET_PARAMETERS_UPDATE', array('cur', 'action'));
 //This array holds the predefined rates for the application. 
 define('PRE_DEFINED_ISO_CODES', array('AUD','BRL','CAD','CHF','CNY','DKK','EUR','GBP','HKD','HUF','INR','JPY','MXN','MYR','NOK','NZD','PHP','RUB','SEK','SGD','THB','TRY','USD','ZAR'));
 
@@ -33,6 +35,6 @@ define('FORMATS', array('xml', 'json'));
 
 //Base currency for the rates stored.
 define('URL_RATES', 'http://data.fixer.io/api/latest?access_key=313f82e98f94595c11df26da43b9835f');
-
+echo strpos(realpath('config.php'), 'update');
 //phpinfo();
 ?>

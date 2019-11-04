@@ -13,12 +13,14 @@
 |                display for the conversion.
 |
 *===========================================================================*/
-include '../functions.php';
-//Defining get parameters 
-$getPreDefinedParameters = ["cur","action"];
+//Config used to hold predefined values
+require_once('../config.php');
+//Functions used throught this service is located.
+require_once('../functions.php');
 
-$cur = $_REQUEST["cur"];
-$action = $_REQUEST["action"];
+//Checking to see if the get methods are set
+$cur = isset($_REQUEST["cur"]) ? strtoupper($_REQUEST["cur"]) : null;
+$action = isset($_REQUEST["action"]) ? strtolower($_REQUEST["action"]) : null;
 
 //Checking if the to and from values are a currency type recognized
 checkCurrencyCodeToXML($cur);
@@ -69,9 +71,7 @@ function conductPostMessage($action, $cur){
         //Contruct arrays with the data above
         $curArray = array("code"=> $cur, "name"=> (string) getCountryNameForCurrencyCode($countries, $cur), "loc"=> getCountryLocationForCurrencyCode($countries, $cur));
         $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $currencyRate, "old_rate"=> $oldRate, "curr"=> $curArray);
-        //Add the main node depending on function
-        //$outputNode = constructOutputArray($dataArray, "action");
-        $outputNode = array("action"=>$dataNode);
+        $outputNode = array("action"=>$dataArray);
 
         //Convert array to the formatted out put, default xml.
         convertArrayToFormatForOutput("xml", $outputNode, "post");
@@ -96,9 +96,7 @@ function conductDeleteCurrency($action, $cur){
         file_put_contents('../data/rates.xml', $rates->saveXML());
         //Contruct arrays with the data above
         $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "code"=> $cur);
-        //Add the main node depending on function
-        //$outputNode = constructOutputArray($dataArray, "action");
-        $outputNode = array("action"=>$dataNode);
+        $outputNode = array("action"=>$dataArray);
         //Convert array to the formatted out put, default xml.
         convertArrayToFormatForOutput("xml", $outputNode, "del");
     }

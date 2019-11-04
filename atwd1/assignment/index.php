@@ -13,6 +13,7 @@
 |                display for the conversion.
 |
 *===========================================================================*/
+//Config used to hold predefined values
 require_once('config.php');
 //Functions used throught this service is located.
 require_once('functions.php');
@@ -47,7 +48,7 @@ checkFormatIsXmlOrJson($format);
 //This should check to see if the value is a decimal and not a float
 checkAmountIsFloat($amount);
 //Check the parameters are the ones that are expected
-checkParametersAreRecognized(PRE_DEFINED_GET_PARAMETERS);
+checkParametersAreRecognized(PRE_DEFINED_GET_PARAMETERS_CONVERSION);
 //Setting value outside the ifstatement to allow us to access rates below the if statement.
 $rates = null;
 //Check if file doesn't exists and then create file or read that file.
