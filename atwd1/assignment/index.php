@@ -36,7 +36,7 @@ function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amoun
 $countryFrom = isset($_REQUEST["from"]) ? strtoupper($_REQUEST["from"]) : null;
 $countryTo = isset($_REQUEST["to"]) ? strtoupper($_REQUEST["to"]) : null;
 $amount = isset($_REQUEST["amnt"]) ? $_REQUEST["amnt"] : null;
-$format = isset($_REQUEST["format"]) ? $_REQUEST["format"] : null;
+$format = isset($_REQUEST["format"]) ? strtolower($_REQUEST["format"]) : null;
 //If the values are null then output error message.
 if (!$countryFrom || !$countryTo || !$amount) {
     // maybe make a function "productParametersMissingError"

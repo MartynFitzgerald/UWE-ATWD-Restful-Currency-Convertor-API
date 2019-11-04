@@ -28,11 +28,11 @@ define('COUNTRIES_FILENAME', 'countries.xml');
 
 //Base currency for the rates stored.
 define('BASE', 'GBP');
+//Formats that this service will be allowed.
+define('FORMATS', array('xml', 'json'));
 
 //Base currency for the rates stored.
 define('URL_RATES', 'http://data.fixer.io/api/latest?access_key=313f82e98f94595c11df26da43b9835f');
-
-define('FORMATS', array('xml', 'json'));
 
 //phpinfo();
 ?>
