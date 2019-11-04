@@ -14,16 +14,25 @@
 //Setting default timezone of the service
 @date_default_timezone_set("Europe/London");
 
-define('RATES_LOCATION', 'rates.xml');
-
 //Defining expected GET parameters 
 define('PRE_DEFINED_GET_PARAMETERS', array('from', 'to', 'amnt', 'format'));
+//This array holds the predefined rates for the application. 
+define('PRE_DEFINED_ISO_CODES', array('AUD','BRL','CAD','CHF','CNY','DKK','EUR','GBP','HKD','HUF','INR','JPY','MXN','MYR','NOK','NZD','PHP','RUB','SEK','SGD','THB','TRY','USD','ZAR'));
 
+//Rates file name stored on the server.
 define('RATES_FILENAME', 'rates.xml');
+//Errors file name stored on the server.
+define('ERRORS_FILENAME', 'errors.xml');
+//Countries file name stored on the server.
+define('COUNTRIES_FILENAME', 'countries.xml');
 
+//Base currency for the rates stored.
 define('BASE', 'GBP');
 
-define('FORMATS', serialize (array('xml', 'json')));
+//Base currency for the rates stored.
+define('URL_RATES', 'http://data.fixer.io/api/latest?access_key=313f82e98f94595c11df26da43b9835f');
+
+define('FORMATS', array('xml', 'json'));
 
 //phpinfo();
 ?>

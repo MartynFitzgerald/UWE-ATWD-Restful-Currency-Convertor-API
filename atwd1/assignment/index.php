@@ -16,8 +16,6 @@
 require_once('config.php');
 //Functions used throught this service is located.
 require_once('functions.php');
-//Setting global rates file name.
-$GLOBALS['ratesFilename'] = 'rates.xml';
 //Display the currency conversion to the user and do the calulation to get value.
 function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format){
     //Getting the currency rate from the XML data file
@@ -35,8 +33,8 @@ function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amoun
     convertArrayToFormatForOutput($outputNode, $format);
 }
 //Checking to see if the get methods are set
-$countryFrom = isset($_REQUEST["from"]) ? $_REQUEST["from"] : null;
-$countryTo = isset($_REQUEST["to"]) ? $_REQUEST["to"] : null;
+$countryFrom = isset($_REQUEST["from"]) ? strtoupper($_REQUEST["from"]) : null;
+$countryTo = isset($_REQUEST["to"]) ? strtoupper($_REQUEST["to"]) : null;
 $amount = isset($_REQUEST["amnt"]) ? $_REQUEST["amnt"] : null;
 $format = isset($_REQUEST["format"]) ? $_REQUEST["format"] : null;
 //If the values are null then output error message.

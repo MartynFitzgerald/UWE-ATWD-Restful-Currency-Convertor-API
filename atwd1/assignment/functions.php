@@ -100,11 +100,11 @@ function getRatesFromDataFile(){
 function getErrorsFromDataFile(){
     //Getting errors information from the file stored locally. @ is suppress wearning so we can handle myself.
     try {
-        if (is_file('./data/errors.xml')) {
-            $xml = @simplexml_load_file('./data/errors.xml');
+        if (is_file('./data/'. ERRORS_FILENAME)) {
+            $xml = @simplexml_load_file('./data/'. ERRORS_FILENAME);
         }
         else {
-            $xml = @simplexml_load_file('../data/errors.xml');
+            $xml = @simplexml_load_file('../data/'. ERRORS_FILENAME);
         }
     } catch (Exception $e) {
         //Send error message to user and then kill the service
@@ -116,11 +116,11 @@ function getErrorsFromDataFile(){
 function getCountriesFromDataFile(){
     //Getting contries information from the file stored locally. @ is suppress wearning so we can handle myself.
     try {
-        if (is_file('./data/countries.xml')) {
-            $xml = @simplexml_load_file('./data/countries.xml');
+        if (is_file('./data/'. COUNTRIES_FILENAME)) {
+            $xml = @simplexml_load_file('./data/'. COUNTRIES_FILENAME);
         }
         else {
-            $xml = @simplexml_load_file('../data/countries.xml');
+            $xml = @simplexml_load_file('../data/'. COUNTRIES_FILENAME);
         }
     } catch (Exception $e) {
         //Send error message to user and then kill the service
@@ -131,7 +131,7 @@ function getCountriesFromDataFile(){
 //Get list of the currencies and their rates at current time.
 function getCurrencyRatesFromExternalAPI() {
     //Getting current currencies information from the API. @ is suppress wearning so we can handle myself.
-    $json = @file_get_contents('http://data.fixer.io/api/latest?access_key=313f82e98f94595c11df26da43b9835f');
+    $json = @file_get_contents(URL_RATES);
     $jsonFormatted = json_decode($json, true);
     //Check if we don't have valid XML file
     if ($json === false || $jsonFormatted["success"] === false) {
@@ -142,9 +142,6 @@ function getCurrencyRatesFromExternalAPI() {
 }
 //Initialize rates file if there isnt one already
 function initializeRatesXML($currenciesISOCodes, $currencies) {
-    //Base currency for the rates stored.
-    $baseCurrency = "GBP";
-
     //Creating timestamp for when created in XML document
     $timeStamp =  time();
     //Create XML Document
@@ -152,7 +149,7 @@ function initializeRatesXML($currenciesISOCodes, $currencies) {
     //Creating "currencies" Node
     $root = $dom->createElement("currencies");
     //Adding attribute "base" and "ts" to "currencies" Node
-    $root->setAttributeNode(new DOMAttr("base", $baseCurrency));
+    $root->setAttributeNode(new DOMAttr("base", BASE));
     $root->setAttributeNode(new DOMAttr("ts", $timeStamp));
     //Setting root to the XML document
     $dom->appendChild($root);
@@ -160,7 +157,7 @@ function initializeRatesXML($currenciesISOCodes, $currencies) {
     //This loop cycles through the predefined rates.
     for ($i = 0; $i < sizeof($currenciesISOCodes); $i++) {
         //Calculating the rate, since the API base currency isnt GBP
-        $currencyRate = $currencies[$currenciesISOCodes[$i]] / $currencies[$baseCurrency];
+        $currencyRate = $currencies[$currenciesISOCodes[$i]] / $currencies[BASE];
         //Setting the ISO code for this currency
         $currencyCode = $currenciesISOCodes[$i];
         //Create main currency node for each currency pre-defined
@@ -176,14 +173,12 @@ function initializeRatesXML($currenciesISOCodes, $currencies) {
 }
 //Get the data from api and inialized rates XML
 function initializeDataFromAPI() {
-    //This array holds the predefined rates for the application. 
-    $currenciesISOCodes = ["AUD","BRL","CAD","CHF","CNY","DKK","EUR","GBP","HKD","HUF","INR","JPY","MXN","MYR","NOK","NZD","PHP","RUB","SEK","SGD","THB","TRY","USD","ZAR"];
     //Call function to get current currencies information from the API
     $currentCurrencies = getCurrencyRatesFromExternalAPI();
     //Setting the rates of all currency rates to the a varible.
     $currencies = $currentCurrencies["rates"];
     //Call function to create new rates file
-    initializeRatesXML($currenciesISOCodes, $currencies);
+    initializeRatesXML(PRE_DEFINED_ISO_CODES, $currencies);
 }
 //Get the data from api and inialized rates XML
 function updateDataFromAPI($currentRates) {
@@ -227,9 +222,9 @@ function checkParametersAreRecognized($getPreDefinedParameters) {
 }
 // Checking the format and retunr it.
 function checkFormatIsXmlOrJson($format) {
-    if ($format != "json" && $format != "xml"){
+    if (!in_array($format, FORMATS)) {
         //Output error 1400	- Format must be xml or json
-        outputErrorMessageResponse(1400); 
+        outputErrorMessageResponse(1400);  
     } 
 }
 //Checking if the amount given is a float. 
