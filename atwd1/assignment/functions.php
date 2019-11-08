@@ -267,7 +267,7 @@ function getCountryLocationForCurrencyCode($countries, $currencyCode){
     //Getting the currency name from the XML data file
     $currencyLocations = $countries->xpath("/ISO_4217/CcyTbl/CcyNtry[Ccy='" . $currencyCode . "']/CtryNm");
     //Formatted the locations to put them into a string and also capitalization the first letter within a word
-    $countryLocation = ucwords(strtolower(implode(", ",$currencyLocations)));
+    $countryLocation = str_replace(['Of', 'And'], ['of', 'and'], ucwords(strtolower(implode(", ",$currencyLocations))));
     return $countryLocation;
 }
 //Get currency rate in the rates API.
