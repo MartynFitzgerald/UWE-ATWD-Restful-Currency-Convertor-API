@@ -10,18 +10,23 @@
   <div class="formContainer" >
     <h3>Form Interface for POST, PUT & DELETE:</h3>
     <hr/>
-    <form id="currencyForm" action="update/">
+    <form>
         <h5>Action:</h5>
-        <input type="radio" name="action" value="post" checked> Post
-        <input type="radio" name="action" value="put"> Put
-        <input type="radio" name="action" value="delete"> Delete
+        <div id="actions">
+          <input type="radio" name="actions" value="post" checked> Post
+          <input type="radio" name="actions" value="put"> Put
+          <input type="radio" name="actions" value="del"> Delete
+        </div>
+
         <h5>Currency: </h5>
         <select id="cur" name="cur">
           <option disabled selected>Select currency code</option>
         </select>
+
         <br/><br/>
-        <input class="submit" type="submit" value="Submit">
+        <input class="submit" type="button" value="Submit">
         <br/><br/>
+
         <h5>Response Message:</h5>
         <textarea rows="15" cols="54" form="currencyForm"></textarea>
     </form>
@@ -52,5 +57,16 @@ $.ajax({
   } 
 }); 
 
+$('.submit').click(function() {
+  var currencyCode = document.querySelector('option:checked').value;
+  var action = document.querySelector('input[name="actions"]:checked').value;
+  $.ajax({
+    type: "GET",
+    url: "./update/?action=" + action + "&cur=" + currencyCode,
+    success: function (data) {
+      //console.log(data);
+      document.querySelector('textarea').textContent = new XMLSerializer().serializeToString(data);
+  }}); 
+})
 </script> 
 </html>

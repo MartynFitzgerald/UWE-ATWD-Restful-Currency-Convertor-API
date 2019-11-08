@@ -17,36 +17,6 @@
 require_once('config.php');
 //Functions used throught this service is located.
 require_once('functions.php');
-//Display the currency conversion to the user and do the calulation to get value.
-function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format){
-    //Getting the currency rate from the XML data file
-    $base = $rates->xpath("/currencies/@base");
-    //If conversion is to GBP then get the rate of GBP 
-    if($countryTo == $base[0]) {
-        //Get the base rate.
-        $baseRate = $rates->xpath("/currencies/currency[@code='". $base[0] ."']/@rate");
-        //Getting the currency rate from the XML data file
-        $rateTo = $rates->xpath("/currencies/currency[@code='". $countryFrom ."']/@rate");
-        $rate = (float) ($baseRate[0] / $rateTo[0]);
-        //Calculating the conversion.
-        $amountCalculation = round($rate * $amount, 2);
-    } else {
-        //Getting the currency rate from the XML data file
-        $rateTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']/@rate");
-        //Calculating the conversion.
-        $amountCalculation = round($rateTo[0] * $amount, 2);
-        $rate = (float) $rateTo[0];
-    }
-    //Getting timestamp from document
-    $ts = $rates->xpath("/currencies/@ts");
-    //Build the PHP array so we can convert it too xml or json.
-    $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryFrom), "loc"=> getCountryLocationForCurrencyCode($countries, $countryFrom), "amnt"=> (float) $amount);
-    $toArray = array("code"=> $countryTo, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryTo), "loc"=> getCountryLocationForCurrencyCode($countries, $countryTo), "amnt"=> $amountCalculation);
-    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> $rate, "from"=> $fromArray, "to"=> $toArray);
-    $outputNode = array("conv"=>$dataArray);
-    //Convert array to format and output
-    convertArrayToFormatForOutput($outputNode, $format);
-}
 //Checking to see if the get methods are set
 $countryFrom = isset($_REQUEST["from"]) ? strtoupper($_REQUEST["from"]) : null;
 $countryTo = isset($_REQUEST["to"]) ? strtoupper($_REQUEST["to"]) : null;
@@ -94,4 +64,34 @@ checkCurrencyCode($rates, $countryTo);
 $countries = getCountriesFromDataFile();
 //Produce conversion message to user.
 conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format);
+//Display the currency conversion to the user and do the calulation to get value.
+function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format){
+    //Getting the currency rate from the XML data file
+    $base = $rates->xpath("/currencies/@base");
+    //If conversion is to GBP then get the rate of GBP 
+    if($countryTo == $base[0]) {
+        //Get the base rate.
+        $baseRate = $rates->xpath("/currencies/currency[@code='". $base[0] ."']/@rate");
+        //Getting the currency rate from the XML data file
+        $rateTo = $rates->xpath("/currencies/currency[@code='". $countryFrom ."']/@rate");
+        $rate = (float) ($baseRate[0] / $rateTo[0]);
+        //Calculating the conversion.
+        $amountCalculation = round($rate * $amount, 2);
+    } else {
+        //Getting the currency rate from the XML data file
+        $rateTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']/@rate");
+        //Calculating the conversion.
+        $amountCalculation = round($rateTo[0] * $amount, 2);
+        $rate = (float) $rateTo[0];
+    }
+    //Getting timestamp from document
+    $ts = $rates->xpath("/currencies/@ts");
+    //Build the PHP array so we can convert it too xml or json.
+    $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryFrom), "loc"=> getCountryLocationForCurrencyCode($countries, $countryFrom), "amnt"=> (float) $amount);
+    $toArray = array("code"=> $countryTo, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryTo), "loc"=> getCountryLocationForCurrencyCode($countries, $countryTo), "amnt"=> $amountCalculation);
+    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> $rate, "from"=> $fromArray, "to"=> $toArray);
+    $outputNode = array("conv"=>$dataArray);
+    //Convert array to format and output
+    convertArrayToFormatForOutput($outputNode, $format);
+}
 ?>
