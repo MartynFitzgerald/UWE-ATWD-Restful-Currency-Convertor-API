@@ -26,35 +26,54 @@ $action = isset($_REQUEST["action"]) ? strtolower($_REQUEST["action"]) : null;
 checkCurrencyCodeToXML($cur);
 //Check the parameters are the ones that are expected
 checkParametersAreRecognized(PRE_DEFINED_GET_PARAMETERS_UPDATE);
-if ($cur == "GBP")
+if ($cur == BASE)
 {
     //Output error 2400 - Cannot update base currency
     outputErrorMessageResponse(2400); 
 }
 
-if ($action === "post")
+//Setting value outside the ifstatement to allow us to access rates below the if statement.
+$rates = null;
+//Check if file doesn't exists and then create file or read that file.
+if (!file_exists(RATES_PATH_DIRECTORY))
 {
-    conductPostMessage($action, $cur);
+    //Create rates file
+    initializeDataFromAPI();
+    //Request the rates information form file
+    $rates = getRatesFromDataFile();
+} else {
+    //Request the rates information form file
+    $rates = getRatesFromDataFile();
+    //Getting the currency name from the XML data file
+    $timeStamp = $rates->xpath("/currencies/@ts");
+    //Formatting the timestamp to the date format
+    $formatTimeStamp = date('d F Y H:i',  substr($timeStamp[0], 0, 10));
+    //Checking to if the current time is above 2 hours from the time stamp stored.
+    if ($timeStamp[0] <= strtotime("-2 hours")) {
+        //Rename XML file to inlcude date.
+        archiveRatesFile($timeStamp[0]);
+        //Request data from APIs and create rates.xml file.
+        updateDataFromAPI($rates);
+    }
 }
-else if ($action === "put")
-{
-
+//Check what actions is given
+if ($action === "post") {
+    conductPostMessage($action, $cur, $rates);
 }
-else if ($action === "del")
-{
-    conductDeleteCurrency($action, $cur);
+else if ($action === "put") {
+    conductPutMessage($action, $cur, $rates);
 }
-else
-{
+else if ($action === "del") {
+    conductDeleteCurrency($action, $cur, $rates);
+}
+else {
     //Output error 2000 - Action not recognized or is missing
     outputErrorMessageResponse(2000); 
 }
 //Display the new currency rate to the user and do the calulation to get value.
-function conductPostMessage($action, $cur){
+function conductPostMessage($action, $cur, $rates){
     //Getting contries information from the file stored locally.
     $countries = getCountriesFromDataFile();
-    //Getting contries information from the file stored locally.
-    $rates = getRatesFromDataFile();
     //Update currency rate in the rates file.
     $currencyRate = getNewCurrencyRate($cur);
     //Get timestamp from rates file.
@@ -65,40 +84,76 @@ function conductPostMessage($action, $cur){
     $oldRate = (float) $rate[0]->rate;
     //Make node attrube @rate equal to the new rate for that currency
     $rate[0]->rate = $currencyRate; 
-    //If the values of the rates are not the same then show difference otherwise show error.
-    //if (!(float) $rate[0]->rate == $oldRate) {
     //Save the values in the rates.xml
-    file_put_contents('../data/rates.xml', $rates->saveXML());
+    file_put_contents(RATES_PATH_DIRECTORY, $rates->saveXML());
     //Contruct arrays with the data above
     $curArray = array("code"=> $cur, "name"=> (string) getCountryNameForCurrencyCode($countries, $cur), "loc"=> getCountryLocationForCurrencyCode($countries, $cur));
     $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $currencyRate, "old_rate"=> $oldRate, "curr"=> $curArray);
     $outputNode = array("action"=>$dataArray);
-
     //Convert array to the formatted out put, default xml.
-    convertArrayToFormatForOutput($outputNode, "xml", "post");
+    convertArrayToFormatForOutput($outputNode, "xml", $action);
+}
+//Display the new currency rate to the user and do the calulation to get value.
+function conductPutMessage($action, $cur, $rates){
+    //Getting contries information from the file stored locally.
+    $countries = getCountriesFromDataFile();
+    //Update currency rate in the rates file.
+    $currencyRate = getNewCurrencyRate($cur);
+    //Get timestamp from rates file.
+    $ts = $rates->xpath("/currencies/@ts");
+
+    $currency = $rates->xpath("/currencies/currency[@code='". $cur ."']");
+    if ($currency == false)
+    {
+        //Getting the currency rate from the XML data file
+        $currencies = $rates->xpath("/currencies/currency");
+
+        $artributeArray = array("code"=> $cur, "rate"=> $currencyRate, "isAvailable"=> "1");
+        array_push($currencies, $artributeArray);
+        
+        $array = new SimpleXMLElement($currencies[0]);
+
+
+        var_dump($array);
+        var_dump($currencies);
+        
+        //$currencies->addChild('title', 'PHP2: More Parser Stories');
+
+        //$currency[0]"currency"]["code"] = $cur;
+        //$currency[0]"currency"]["rate"] = $currencyRate;
+        //$currency[0]"currency"]["isAvailable"] = "test";
+        //$currencies[0] => $artributeArray;
+    }
+    else {
+        $currency[0]["isAvailable"] = "1";
+    }
+    //Save the values in the rates.xml
+    file_put_contents(RATES_PATH_DIRECTORY, $rates->saveXML());
+    //Contruct arrays with the data above
+    $curArray = array("code"=> $cur, "name"=> (string) getCountryNameForCurrencyCode($countries, $cur), "loc"=> getCountryLocationForCurrencyCode($countries, $cur));
+    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> (float) $currencyRate, "curr"=> $curArray);
+    $outputNode = array("action"=>$dataArray);
+    //Convert array to the formatted out put, default xml.
+    convertArrayToFormatForOutput($outputNode, "xml", $action);
 }
 //Display the deleted currency to the user.
-function conductDeleteCurrency($action, $cur){
-    //Getting contries information from the file stored locally.
-    $rates = getRatesFromDataFile();
+function conductDeleteCurrency($action, $cur, $rates){
     //Get timestamp from rates file.
     $ts = $rates->xpath("/currencies/@ts");
     //Getting the currency from the XML data file
-    $currency = $rates->xpath("/currencies/currency[@code='". $cur ."']");
-    if($currency == true)
-    {
+    $currency = $rates->xpath("/currencies/currency[@code='". $cur ."']/@isAvailable");
+    if($isAvailable == true) {
         //Unset curreny specified from the xml
-        unset($currency[0][0]);
+        $currency[0]->isAvailable = "0";
         //Save the values in the rates.xml
-        file_put_contents('../data/rates.xml', $rates->saveXML());
+        file_put_contents(RATES_PATH_DIRECTORY, $rates->saveXML());
         //Contruct arrays with the data above
         $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "code"=> $cur);
         $outputNode = array("action"=>$dataArray);
         //Convert array to the formatted out put, default xml.
-        convertArrayToFormatForOutput($outputNode, "xml", "del");
+        convertArrayToFormatForOutput($outputNode, "xml", $action);
     }
-    else
-    {
+    else {
         //Output error 2300 - No rate listed for this currency
         outputErrorMessageResponse(2300); 
     }

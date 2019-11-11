@@ -23,10 +23,18 @@ define('PRE_DEFINED_ISO_CODES', array('AUD','BRL','CAD','CHF','CNY','DKK','EUR',
 
 //Rates file name stored on the server.
 define('RATES_FILENAME', 'rates.xml');
+//Rates file name stored on the server.
+define('RATES_PATH_DIRECTORY', is_dir('./data/') ? './data/' . RATES_FILENAME : '../data/' . RATES_FILENAME);
+
 //Errors file name stored on the server.
 define('ERRORS_FILENAME', 'errors.xml');
+//Errors file name stored on the server.
+define('ERRORS_PATH_DIRECTORY', is_dir('./data/') ? './data/' . ERRORS_FILENAME : '../data/' . ERRORS_FILENAME);
+
 //Countries file name stored on the server.
 define('COUNTRIES_FILENAME', 'countries.xml');
+//Countries file name stored on the server.
+define('COUNTRIES_PATH_DIRECTORY', is_dir('./data/') ? './data/' . COUNTRIES_FILENAME : '../data/' . COUNTRIES_FILENAME);
 
 //Base currency for the rates stored.
 define('BASE', 'GBP');
@@ -35,6 +43,4 @@ define('FORMATS', array('xml', 'json'));
 
 //Base currency for the rates stored.
 define('URL_RATES', 'http://data.fixer.io/api/latest?access_key=313f82e98f94595c11df26da43b9835f');
-echo strpos(realpath('config.php'), 'update');
-//phpinfo();
 ?>

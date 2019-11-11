@@ -12,8 +12,12 @@
 |
 *===========================================================================*/
 function archiveRatesFile($timeStampSuffix) {
+    //Find position of dot after the 3rd value
+    $pos = strrpos(RATES_PATH_DIRECTORY, ".", 3);
+    //Remove file extention
+    $filePathWithoutExenstion = substr(RATES_PATH_DIRECTORY,0,$pos); 
     //Rename XML file to inlcude date
-    copy("./data/" . RATES_FILENAME, "./data/rates" . $timeStampSuffix . ".xml");
+    copy(RATES_PATH_DIRECTORY, $filenameWithoutExenstion . $timeStampSuffix . ".xml");
 }
 //Function defination to convert array to xml
 //source: https://www.codexworld.com/convert-array-to-xml-in-php/
@@ -60,10 +64,8 @@ function convertArrayToFormatForOutput($outputNode, $format = null,$actionType =
 function getErrorMessageByErrorCode($errorCode){
     //Getting errors information from the file stored locally.
     $errors = getErrorsFromDataFile();
-
     //Getting the error message from the XML data file
     $errorMessage = $errors->xpath("/errors/error[code='" . $errorCode . "']/message");
-
     return $errorMessage[0];
 }
 //This outputs the error message to the user. Then exits out of the programe.
@@ -84,12 +86,7 @@ function outputErrorMessageResponse($errorCode, $message = null){
 function getRatesFromDataFile(){
     //Getting rates information from the file stored locally. @ is suppress wearning so we can handle myself.
     try {
-        if (is_file('./data/' . RATES_FILENAME)) {
-            $xml = @simplexml_load_file('./data/' . RATES_FILENAME);
-        }
-        else {
-            $xml = @simplexml_load_file('../data/'. RATES_FILENAME);
-        }
+        $xml = @simplexml_load_file(RATES_PATH_DIRECTORY);
     } catch (Exception $e) {
         //rates does not exist - even after trying to create the file
         outputErrorMessageResponse(1500, "Error in service");
@@ -100,12 +97,7 @@ function getRatesFromDataFile(){
 function getErrorsFromDataFile(){
     //Getting errors information from the file stored locally. @ is suppress wearning so we can handle myself.
     try {
-        if (is_file('./data/'. ERRORS_FILENAME)) {
-            $xml = @simplexml_load_file('./data/'. ERRORS_FILENAME);
-        }
-        else {
-            $xml = @simplexml_load_file('../data/'. ERRORS_FILENAME);
-        }
+        $xml = @simplexml_load_file(ERRORS_PATH_DIRECTORY);
     } catch (Exception $e) {
         //Send error message to user and then kill the service
         outputErrorMessageResponse(1500, "Error in service");
@@ -116,12 +108,7 @@ function getErrorsFromDataFile(){
 function getCountriesFromDataFile(){
     //Getting contries information from the file stored locally. @ is suppress wearning so we can handle myself.
     try {
-        if (is_file('./data/'. COUNTRIES_FILENAME)) {
-            $xml = @simplexml_load_file('./data/'. COUNTRIES_FILENAME);
-        }
-        else {
-            $xml = @simplexml_load_file('../data/'. COUNTRIES_FILENAME);
-        }
+        $xml = @simplexml_load_file(COUNTRIES_PATH_DIRECTORY);
     } catch (Exception $e) {
         //Send error message to user and then kill the service
         outputErrorMessageResponse(1500);
@@ -165,11 +152,12 @@ function initializeRatesXML($currenciesISOCodes, $currencies) {
         //Adding attributes to the  currency node above
         $itemNode->setAttributeNode(new DOMAttr("rate", $currencyRate));
         $itemNode->setAttributeNode(new DOMAttr("code", $currencyCode));
+        $itemNode->setAttributeNode(new DOMAttr("isAvailable", "1"));
         //Attach the main currency node to the main node in the XML document
         $root->appendChild($itemNode);
     }
     //Saving XML document to the filename defined above
-    $dom->save('./data/'. RATES_FILENAME);
+    $dom->save(RATES_PATH_DIRECTORY);
 }
 //Get the data from api and inialized rates XML
 function initializeDataFromAPI() {

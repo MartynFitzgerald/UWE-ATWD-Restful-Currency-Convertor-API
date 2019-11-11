@@ -36,8 +36,7 @@ checkParametersAreRecognized(PRE_DEFINED_GET_PARAMETERS_CONVERSION);
 //Setting value outside the ifstatement to allow us to access rates below the if statement.
 $rates = null;
 //Check if file doesn't exists and then create file or read that file.
-if (!file_exists('./data/'. RATES_FILENAME))
-{
+if (!file_exists(RATES_PATH_DIRECTORY)) {
     //Create rates file
     initializeDataFromAPI();
     //Request the rates information form file
