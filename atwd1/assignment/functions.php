@@ -176,7 +176,8 @@ function updateDataFromAPI($currentRates) {
     //Setting the rates of all currency rates to the a varible.
     $currencies = $currentCurrencies["rates"];  
     //Getting the currency from the XML data file
-    $currenciesCodes = $currentRates->xpath("/currencies/currency/@code");
+    $currenciesCodes = $currentRates->xpath("/currencies/currency[@isAvailable='1']/@code");
+    var_dump($currenciesCodes);
     //Go throuhg all currencies codes that are in the file and add them into a array.
     foreach ($currenciesCodes as $currency) {
         array_push($currenciesISOCodes, (string) $currency->code);

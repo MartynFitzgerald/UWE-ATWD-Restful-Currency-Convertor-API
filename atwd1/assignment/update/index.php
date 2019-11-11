@@ -97,8 +97,8 @@ function conductPostMessage($action, $cur, $rates){
 function conductPutMessage($action, $cur, $rates){
     //Getting contries information from the file stored locally.
     $countries = getCountriesFromDataFile();
-    //Update currency rate in the rates file.
-    $currencyRate = getNewCurrencyRate($cur);
+    //Update currency rates in the rates.xml file.
+    updateDataFromAPI($rates)
     //Get timestamp from rates file.
     $ts = $rates->xpath("/currencies/@ts");
     //Get currency if the code exist
