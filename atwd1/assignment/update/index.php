@@ -101,30 +101,18 @@ function conductPutMessage($action, $cur, $rates){
     $currencyRate = getNewCurrencyRate($cur);
     //Get timestamp from rates file.
     $ts = $rates->xpath("/currencies/@ts");
-
+    //Get currency if the code exist
     $currency = $rates->xpath("/currencies/currency[@code='". $cur ."']");
-    if ($currency == false)
-    {
-        //Getting the currency rate from the XML data file
-        $currencies = $rates->xpath("/currencies/currency");
-
-        $artributeArray = array("code"=> $cur, "rate"=> $currencyRate, "isAvailable"=> "1");
-        array_push($currencies, $artributeArray);
-        
-        $array = new SimpleXMLElement($currencies[0]);
-
-
-        var_dump($array);
-        var_dump($currencies);
-        
-        //$currencies->addChild('title', 'PHP2: More Parser Stories');
-
-        //$currency[0]"currency"]["code"] = $cur;
-        //$currency[0]"currency"]["rate"] = $currencyRate;
-        //$currency[0]"currency"]["isAvailable"] = "test";
-        //$currencies[0] => $artributeArray;
+    //If not available then make one or set the attribute isAvaiable to true
+    if ($currency == false){
+        //Insert new child to the document with attributes
+        $currencyNode = $rates->addChild("currency");
+        $currencyNode->addAttribute("rate", $currencyRate);
+        $currencyNode->addAttribute("code", $cur);
+        $currencyNode->addAttribute("isAvailable", "1");
     }
     else {
+        //Set the attribute isAvailable to true.
         $currency[0]["isAvailable"] = "1";
     }
     //Save the values in the rates.xml

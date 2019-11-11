@@ -17,7 +17,7 @@ function archiveRatesFile($timeStampSuffix) {
     //Remove file extention
     $filePathWithoutExenstion = substr(RATES_PATH_DIRECTORY,0,$pos); 
     //Rename XML file to inlcude date
-    copy(RATES_PATH_DIRECTORY, $filenameWithoutExenstion . $timeStampSuffix . ".xml");
+    copy(RATES_PATH_DIRECTORY, $filePathWithoutExenstion . $timeStampSuffix . ".xml");
 }
 //Function defination to convert array to xml
 //source: https://www.codexworld.com/convert-array-to-xml-in-php/
