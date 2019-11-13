@@ -3,7 +3,7 @@
   <meta charset="utf-8">
   <title>Restful Currency Convertor</title>
   <link rel="stylesheet" href="css/styles.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script type="text/javascript"  src="js/jquery-3.4.1.min.js"></script>
 </head>
 <body>
   <h1>Restful Currency Convertor</h1>
@@ -63,9 +63,11 @@ $('.submit').click(function() {
   $.ajax({
     type: "GET",
     url: "./update/?action=" + action + "&cur=" + currencyCode,
+    dataType: "xml",
     success: function (data) {
-      //console.log(data);
-      document.querySelector('textarea').textContent = new XMLSerializer().serializeToString(data);
+        //console.log(data);
+
+      document.querySelector('textarea').textContent = (new XMLSerializer()).serializeToString(data);
   }}); 
 })
 </script> 
