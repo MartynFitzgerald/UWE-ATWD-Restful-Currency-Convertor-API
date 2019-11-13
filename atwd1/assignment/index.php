@@ -28,7 +28,10 @@ if (!$countryFrom || !$countryTo || !$amount) {
     outputErrorMessageResponse(1000);
 }
 //Check format is XML, JSON or null
-checkFormatIsXmlOrJson($format);
+if (!in_array($format, FORMATS)) {
+    //Output error 1400	- Format must be xml or json
+    outputErrorMessageResponse(1400);  
+} 
 //This should check to see if the value is a decimal and not a float
 checkAmountIsFloat($amount);
 //Check the parameters are the ones that are expected

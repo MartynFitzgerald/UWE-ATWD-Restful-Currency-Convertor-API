@@ -215,13 +215,6 @@ function checkParametersAreRecognized($getPreDefinedParameters) {
         }
     }
 }
-// Checking the format and retunr it.
-function checkFormatIsXmlOrJson($format) {
-    if (!in_array($format, FORMATS)) {
-        //Output error 1400	- Format must be xml or json
-        outputErrorMessageResponse(1400);  
-    } 
-}
 //Checking if the amount given is a float. 
 function checkAmountIsFloat($value) {
     if (!(is_numeric($value ) || floor($value ) != $value)){
