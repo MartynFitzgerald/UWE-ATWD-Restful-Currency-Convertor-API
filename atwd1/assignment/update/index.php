@@ -65,14 +65,11 @@ if ($action === "post") {
     } else {
         conductPostMessage($action, $cur, $rates, $oldRate);
     }
-}
-else if ($action === "put") {
+} else if ($action === "put") {
     conductPutMessage($action, $cur, $rates);
-}
-else if ($action === "del") {
+} else if ($action === "del") {
     conductDeleteCurrency($action, $cur, $rates);
-}
-else {
+} else {
     //Output error 2000 - Action not recognized or is missing
     outputErrorMessageResponse(2000); 
 }
@@ -95,8 +92,6 @@ function conductPostMessage($action, $cur, $rates, $oldRate = null) {
     $timeStamp = (int) $rates->xpath("/currencies/@ts")[0];
     //Getting the currency rate from the XML data file
     $rate = (float) $rates->xpath("/currencies/currency[@code='". $cur ."']/@rate")[0]->rate;
-    //Save the values in the rates.xml
-    //file_put_contents(RATES_PATH_DIRECTORY, $rates->saveXML());
     //Contruct arrays with the data above
     $curArray = array("code"=> $cur, "name"=> (string) getCountryNameForCurrencyCode($countries, $cur), "loc"=> getCountryLocationForCurrencyCode($countries, $cur));
     $dataArray = array("at"=> date('d M Y H:i', $timeStamp), "rate"=> $rate, "old_rate"=> $oldRate, "curr"=> $curArray);
