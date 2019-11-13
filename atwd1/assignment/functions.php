@@ -169,7 +169,7 @@ function initializeDataFromAPI() {
     initializeRatesXML(PRE_DEFINED_ISO_CODES, $currencies);
 }
 //Get the data from api and inialized rates XML
-function updateDataFromAPI($currentRates) {
+function updateDataFromAPI($currentRates, $timeStamp, $newCur = null) {
     $currenciesISOCodes = [];
     //Call function to get current currencies information from the API
     $currentCurrencies = getCurrencyRatesFromExternalAPI();
@@ -181,6 +181,13 @@ function updateDataFromAPI($currentRates) {
     foreach ($currenciesCodes as $currency) {
         array_push($currenciesISOCodes, (string) $currency->code);
     }
+    //Add any new currency from put function
+    if ($newCur == true)
+    {
+        array_push($currenciesISOCodes, (string) $newCur);
+    }
+    //Rename XML file to inlcude date.
+    archiveRatesFile($timeStamp);
     //Call function to create new rates file
     initializeRatesXML($currenciesISOCodes, $currencies);
 }
@@ -257,12 +264,5 @@ function getCountryLocationForCurrencyCode($countries, $currencyCode){
     //Formatted the locations to put them into a string and also capitalization the first letter within a word
     $countryLocation = str_replace(['Of', 'And'], ['of', 'and'], ucwords(strtolower(implode(", ",$currencyLocations))));
     return $countryLocation;
-}
-//Get currency rate in the rates API.
-function getNewCurrencyRate($cur){
-    //Getting currencies information from the APi.
-    $currencies = getCurrencyRatesFromExternalAPI();
-    //Setting the rates of all currency rates to the a varible.
-    return ($currencies["rates"][$cur] / $currencies["rates"]["GBP"]);
 }
 ?>

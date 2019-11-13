@@ -45,15 +45,13 @@ if (!file_exists(RATES_PATH_DIRECTORY)) {
     //Request the rates information form file
     $rates = getRatesFromDataFile();
     //Getting the currency name from the XML data file
-    $timeStamp = $rates->xpath("/currencies/@ts");
+    $timeStamp = $rates->xpath("/currencies/@ts")[0];
     //Formatting the timestamp to the date format
-    $formatTimeStamp = date('d F Y H:i',  substr($timeStamp[0], 0, 10));
+    $formatTimeStamp = date('d F Y H:i',  substr($timeStamp, 0, 10));
     //Checking to if the current time is above 2 hours from the time stamp stored.
-    if ($timeStamp[0] <= strtotime("-2 hours")) {
-        //Rename XML file to inlcude date.
-        archiveRatesFile($timeStamp[0]);
+    if ($timeStamp <= strtotime("-2 hours")) {
         //Request data from APIs and create rates.xml file.
-        updateDataFromAPI($rates);
+        updateDataFromAPI($rates, $timeStamp);
     }
 }
 //Checking currency code to the rates.xml file.
@@ -66,21 +64,21 @@ conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $forma
 //Display the currency conversion to the user and do the calulation to get value.
 function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format){
     //Getting the currency rate from the XML data file
-    $base = $rates->xpath("/currencies/@base");
+    $base = $rates->xpath("/currencies/@base")[0];
     //If conversion is to GBP then get the rate of GBP 
-    if($countryTo == $base[0]) {
+    if($countryTo == $base) {
         //Get the base rate.
-        $baseRate = $rates->xpath("/currencies/currency[@code='". $base[0] ."']/@rate");
+        $baseRate = $rates->xpath("/currencies/currency[@code='". $base ."']/@rate")[0];
         //Getting the currency rate from the XML data file
-        $rateTo = $rates->xpath("/currencies/currency[@code='". $countryFrom ."']/@rate");
-        $rate = (float) ($baseRate[0] / $rateTo[0]);
+        $rateTo = $rates->xpath("/currencies/currency[@code='". $countryFrom ."']/@rate")[0];
+        $rate = (float) ($baseRate / $rateTo);
         //Calculating the conversion.
         $amountCalculation = round($rate * $amount, 2);
     } else {
         //Getting the currency rate from the XML data file
-        $rateTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']/@rate");
+        $rateTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']/@rate")[0];
         //Calculating the conversion.
-        $amountCalculation = round($rateTo[0] * $amount, 2);
+        $amountCalculation = round($rateTo * $amount, 2);
         $rate = (float) $rateTo[0];
     }
     //Getting timestamp from document
