@@ -223,13 +223,13 @@ function checkAmountIsFloat($value) {
     }
 }
 //check if the currency code is valid to rates.
-function checkCurrencyCode($rates, $currencyCode) {
+function checkCurrencyCode($rates, $currencyCode, $errorCode) {
     //Getting the currency code from the XML data file
     $ratesCode = $rates->xpath("/currencies/currency[@code='". $currencyCode ."']/@code");
     //If the Xpath returned false then show error
     if (@$ratesCode[0] != $currencyCode) {   
-        //Output error 1200 - Currency type not recognized 
-        outputErrorMessageResponse(1200);  
+        //Output error 1200 || 2200 - Currency type not recognized 
+        outputErrorMessageResponse($errorCode);  
     }
 }
 //check if the currency code is valid to countries.

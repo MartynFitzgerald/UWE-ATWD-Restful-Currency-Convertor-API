@@ -58,8 +58,8 @@ if (!file_exists(RATES_PATH_DIRECTORY)) {
     }
 }
 //Checking currency code to the rates.xml file.
-checkCurrencyCode($rates, $countryFrom);
-checkCurrencyCode($rates, $countryTo);
+checkCurrencyCode($rates, $countryFrom, 1200);
+checkCurrencyCode($rates, $countryTo, 1200);
 //Request the countries information form file.
 $countries = getCountriesFromDataFile();
 //Produce conversion message to user.

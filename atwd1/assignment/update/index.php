@@ -20,7 +20,6 @@ require_once('../functions.php');
 //Checking to see if the get methods are set
 $cur = isset($_REQUEST["cur"]) ? strtoupper($_REQUEST["cur"]) : null;
 $action = isset($_REQUEST["action"]) ? strtolower($_REQUEST["action"]) : null;
-
 //Checking if the to and from values are a currency type recognized
 checkCurrencyCodeToXML($cur);
 //Check the parameters are the ones that are expected
@@ -44,7 +43,11 @@ if (!file_exists(RATES_PATH_DIRECTORY)) {
     //Getting the currency name from the XML data file
     $timeStamp = $rates->xpath("//@ts")[0];
     //Getting the currency rate from the XML data file
-    $oldRate = (float) $rates->xpath("/currencies/currency[@code='". $cur ."']/@rate")[0]->rate;
+    if ($action === "post") {
+        //Check if the currency is within rates.xml
+        checkCurrencyCode($rates, $cur, 2200);
+        $oldRate = (float) $rates->xpath("/currencies/currency[@code='". $cur ."']/@rate")[0]->rate;
+    }
     //Formatting the timestamp to the date format
     $formatTimeStamp = date('d F Y H:i',  substr($timeStamp, 0, 10));
     //Checking to if the current time is above 2 hours from the time stamp stored.
@@ -56,6 +59,8 @@ if (!file_exists(RATES_PATH_DIRECTORY)) {
 //Check what actions is given
 if ($action === "post") {
     if ($oldRate == null) {
+        //Check if the currency is within rates.xml
+        checkCurrencyCode($rates, $cur, 2200);
         conductPostMessage($action, $cur, $rates);
     } else {
         conductPostMessage($action, $cur, $rates, $oldRate);
