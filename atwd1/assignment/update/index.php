@@ -142,15 +142,12 @@ function conductDeleteCurrency($action, $cur, $rates){
     //Getting the currency from the XML data file
     $currency = $rates->xpath("/currencies/currency[@code='". $cur ."']/@isAvailable");
     if($currency == true) {
+        //Update currency rates in the rates.xml file.
+        updateDataFromAPI($rates, $oldTmeStamp);
         //Unset currency specified from the xml
         $currency[0]->isAvailable = "0";
         //Save the values in the rates.xml
         file_put_contents(RATES_PATH_DIRECTORY, $rates->saveXML());
-        
-        //Update currency rates in the rates.xml file.
-        updateDataFromAPI($rates, $oldTmeStamp);
-        //Request the new rates information form file
-        $rates = getRatesFromDataFile();
         //Get timestamp from rates file.
         $timeStamp = (int) $rates->xpath("/currencies/@ts")[0];
         //Contruct arrays with the data above
