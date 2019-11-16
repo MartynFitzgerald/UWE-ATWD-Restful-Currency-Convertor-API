@@ -20,6 +20,11 @@ require_once('../functions.php');
 //Checking to see if the get methods are set
 $cur = isset($_REQUEST["cur"]) ? strtoupper($_REQUEST["cur"]) : null;
 $action = isset($_REQUEST["action"]) ? strtolower($_REQUEST["action"]) : null;
+//Check format and if its missing then produce a error
+if (!is_string($cur) || $cur == null){
+    //Output error 2100 - Currency code in wrong format or is missing
+    outputErrorMessageResponse(2100); 
+}
 //Checking if the to and from values are a currency type recognized
 checkCurrencyCodeToXML($cur);
 //Check the parameters are the ones that are expected
