@@ -34,8 +34,8 @@ if (!in_array($format, FORMATS)) {
 } 
 //This should check to see if the value is a decimal and not a float
 checkAmountIsFloat($amount);
-//Check the parameters are the ones that are expected
-checkParametersAreRecognized(PRE_DEFINED_GET_PARAMETERS_CONVERSION);
+//Check the parameters are the ones that are expected, error 1100 - Parameter not recognized
+checkParametersAreRecognized(PRE_DEFINED_GET_PARAMETERS_CONVERSION, 1100);
 //Setting value outside the ifstatement to allow us to access rates below the if statement.
 $rates = null;
 //Check if file doesn't exists and then create file or read that file.

@@ -192,7 +192,7 @@ function updateDataFromAPI($currentRates, $timeStamp, $newCur = null) {
     initializeRatesXML($currenciesISOCodes, $currencies);
 }
 //Check if the parameters in the GET method are correct to the ones pre defined
-function checkParametersAreRecognized($getPreDefinedParameters) {
+function checkParametersAreRecognized($getPreDefinedParameters, $errorCode = null) {
     //Get the amount of values within the parameters expected
     $amountOfGetParameters = sizeof($getPreDefinedParameters);
     //Get the amount of values within the current parameters
@@ -208,8 +208,8 @@ function checkParametersAreRecognized($getPreDefinedParameters) {
             } else {
                 //If not then check if it has cycled through all of the pre-definedexpected parameters 
                 if ($j >= $amountOfGetParameters - 1) {
-                    //Output error 1100 - Parameter not recognized
-                    outputErrorMessageResponse(1100); 
+                    //Output error 1100 - Parameter not recognized or 2500 - Error in service
+                    outputErrorMessageResponse($errorCode); 
                 }
             }
         }

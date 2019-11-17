@@ -27,8 +27,8 @@ if (!is_string($cur) || $cur == null){
 }
 //Checking if the to and from values are a currency type recognized
 checkCurrencyCodeToXML($cur);
-//Check the parameters are the ones that are expected
-checkParametersAreRecognized(PRE_DEFINED_GET_PARAMETERS_UPDATE);
+//Check the parameters are the ones that are expected, error 2500 - Error in service
+checkParametersAreRecognized(PRE_DEFINED_GET_PARAMETERS_UPDATE, 2500);
 if ($cur == BASE) {
     //Output error 2400 - Cannot update base currency
     outputErrorMessageResponse(2400); 
