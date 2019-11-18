@@ -217,12 +217,12 @@ function checkParametersAreRecognized($getPreDefinedParameters, $errorCode = nul
 }
 //Checking if the amount given is a float. 
 function checkAmountIsFloat($value) {
-    if (!(is_numeric($value ) || floor($value ) != $value)){
+    if (!(is_numeric($value) || floor($value) != $value) || preg_match('/\.\d{3,}/', $value)){
         //Output error 1300 - Currency amount must be a decimal number 
         outputErrorMessageResponse(1300); 
     }
 }
-//check if the currency code is valid to rates.
+//check if the currency code is valid to rates.s
 function checkCurrencyCode($rates, $currencyCode, $errorCode) {
     //Getting the currency code from the XML data file
     $ratesCode = $rates->xpath("/currencies/currency[@code='". $currencyCode ."']/@code");
