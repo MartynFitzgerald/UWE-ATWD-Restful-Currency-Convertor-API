@@ -175,16 +175,19 @@ function updateDataFromAPI($currentRates, $timeStamp, $newCur = null) {
     $currentCurrencies = getCurrencyRatesFromExternalAPI();
     //Setting the rates of all currency rates to the a varible.
     $currencies = $currentCurrencies["rates"];  
+    //Add any new currency from put function
+    if ($newCur) {
+        if (!@$currencies[$newCur]) {
+            //Output error 2300 - No rate listed for this currency
+            outputErrorMessageResponse(2300); 
+        }
+        array_push($currenciesISOCodes, (string) $newCur);
+    }
     //Getting the currency from the XML data file
     $currenciesCodes = $currentRates->xpath("/currencies/currency/@code");
     //Go throuhg all currencies codes that are in the file and add them into a array.
     foreach ($currenciesCodes as $currency) {
         array_push($currenciesISOCodes, (string) $currency->code);
-    }
-    //Add any new currency from put function
-    if ($newCur == true)
-    {
-        array_push($currenciesISOCodes, (string) $newCur);
     }
     //Rename XML file to inlcude date.
     archiveRatesFile($timeStamp);

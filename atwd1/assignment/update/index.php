@@ -156,8 +156,8 @@ function conductDeleteCurrency($action, $cur, $rates){
         //Convert array to the formatted out put, default xml.
         convertArrayToFormatForOutput($outputNode, "xml", $action);
     } else {
-        //Output error 2300 - No rate listed for this currency
-        outputErrorMessageResponse(2300); 
+        //Output error 2500 - Error in service
+        outputErrorMessageResponse(2500); 
     }
 }
 ?>
