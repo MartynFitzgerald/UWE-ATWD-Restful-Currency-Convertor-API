@@ -67,8 +67,13 @@ $('.submit').click(function() {
     contentType: "text/plain",
     dataType: "text",
     success: function (data) {
+      $(".submit").attr("disabled", true);
       var minifyXML = vkbeautify.xml(data);
-      $("textarea").html(minifyXML);
+      $("textarea").html(minifyXML)
+
+      setTimeout(function(){ 
+          $(".submit").attr("disabled", false);
+      }, 3000);
   }}); 
 })
 </script> 

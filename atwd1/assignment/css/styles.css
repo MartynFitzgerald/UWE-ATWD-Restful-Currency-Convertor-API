@@ -12,6 +12,13 @@ h5 {
     color: white;
     font-weight: 700;
 }
+
+.submit[disabled="disabled"]{
+  background-color: #cccccc;
+  border: 5px solid #cccccc;
+  color: #666666;
+}
+
 .formContainer {
     width:400px;
     height:100%;
