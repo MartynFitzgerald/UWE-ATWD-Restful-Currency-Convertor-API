@@ -67,20 +67,27 @@ conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $forma
 //Display the currency conversion to the user and do the calulation to get value.
 function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format){
     //Getting the currency rate from the XML data file
-    $rateTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']/@rate")[0];
-    $rateFrom = $rates->xpath("/currencies/currency[@code='". $countryFrom ."']/@rate")[0];
-    //Set rate value
-    $rate = ((float) $rateTo / (float) $rateFrom);
-    //Calculating the conversion.
-    $amountCalculation = round($rate * (float) $amount, 1);
-    //Getting timestamp from document
-    $ts = $rates->xpath("/currencies/@ts");
-    //Build the PHP array so we can convert it too xml or json.
-    $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryFrom), "loc"=> getCountryLocationForCurrencyCode($countries, $countryFrom), "amnt"=> (float) $amount);
-    $toArray = array("code"=> $countryTo, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryTo), "loc"=> getCountryLocationForCurrencyCode($countries, $countryTo), "amnt"=> $amountCalculation);
-    $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> $rate, "from"=> $fromArray, "to"=> $toArray);
-    $outputNode = array("conv"=>$dataArray);
-    //Convert array to format and output
-    convertArrayToFormatForOutput($outputNode, $format);
+    $currencyTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']")[0];
+    $currencyFrom = $rates->xpath("/currencies/currency[@code='". $countryFrom ."']")[0];
+    if ($currencyTo["isAvailable"] == 1 && $currencyFrom["isAvailable"] == 1) {
+        //Set rate value
+        $rate = ((float) $currencyTo["rate"] / (float) $currencyFrom["rate"]);
+        //Calculating the conversion.
+        $amountCalculation = round($rate * (float) $amount, 1);
+        //Getting timestamp from document
+        $ts = $rates->xpath("/currencies/@ts");
+        //Build the PHP array so we can convert it too xml or json.
+        $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryFrom), "loc"=> getCountryLocationForCurrencyCode($countries, $countryFrom), "amnt"=> (float) $amount);
+        $toArray = array("code"=> $countryTo, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryTo), "loc"=> getCountryLocationForCurrencyCode($countries, $countryTo), "amnt"=> $amountCalculation);
+        $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> $rate, "from"=> $fromArray, "to"=> $toArray);
+        $outputNode = array("conv"=>$dataArray);
+        //Convert array to format and output
+        convertArrayToFormatForOutput($outputNode, $format);
+    }
+    else
+    {
+        //Output error 1200	- Currency type not recognised
+        outputErrorMessageResponse(1200);  
+    }
 }
 ?>
