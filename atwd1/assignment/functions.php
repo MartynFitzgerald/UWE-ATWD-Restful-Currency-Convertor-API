@@ -50,7 +50,7 @@ function convertArrayToFormatForOutput($outputNode) {
     } else {
         $firstNodeKey = array_keys($outputNode)[0];
 
-        if (ACTION !== null) {
+        if (defined('ACTION')) {
             $dom = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . " type='". ACTION  ."'></" . $firstNodeKey . ">");
         } else {
             $dom = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . "></" . $firstNodeKey . ">");
@@ -77,7 +77,7 @@ function outputErrorMessageResponse($errorCode, $message = null){
     //Build the PHP array so we can convert it too xml or json.
     $dataNode = array("code"=>$errorCode, "msg"=>(string) $message);
     $errorNode = array("error"=>$dataNode);
-    if (ACTION !== null)    {
+    if (defined('ACTION')) {
         $outputNode = array("action"=>$errorNode);
     }
     else {
