@@ -39,7 +39,7 @@ function arrayToXML($array, &$xmlDocument) {
     }
 }
 //This is converts the PHP array to XML or JSON depending on request  
-function convertArrayToFormatForOutput($outputNode, $actionType = null) {
+function convertArrayToFormatForOutput($outputNode) {
     //Default to XML if json isn't specified  
     if (FORMAT == "json") {
         $outputJSON = json_encode($outputNode);
@@ -50,8 +50,8 @@ function convertArrayToFormatForOutput($outputNode, $actionType = null) {
     } else {
         $firstNodeKey = array_keys($outputNode)[0];
 
-        if ($actionType != null) {
-            $dom = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . " type='". $actionType  ."'></" . $firstNodeKey . ">");
+        if (ACTION !== null) {
+            $dom = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . " type='". ACTION  ."'></" . $firstNodeKey . ">");
         } else {
             $dom = new SimpleXMLElement("<?xml version=\"1.0\"?><" . $firstNodeKey . "></" . $firstNodeKey . ">");
         }
@@ -77,7 +77,12 @@ function outputErrorMessageResponse($errorCode, $message = null){
     //Build the PHP array so we can convert it too xml or json.
     $dataNode = array("code"=>$errorCode, "msg"=>(string) $message);
     $errorNode = array("error"=>$dataNode);
-    $outputNode = array("conv"=>$errorNode);
+    if (ACTION !== null)    {
+        $outputNode = array("action"=>$errorNode);
+    }
+    else {
+        $outputNode = array("conv"=>$errorNode);
+    }
     convertArrayToFormatForOutput($outputNode); 
     //Terminate the current script 
     exit();

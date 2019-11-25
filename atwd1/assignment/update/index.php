@@ -103,7 +103,7 @@ function conductPostMessage($rates, $oldRate = null) {
     $dataArray = array("at"=> date('d M Y H:i', $timeStamp), "rate"=> $rate, "old_rate"=> $oldRate, "curr"=> $curArray);
     $outputNode = array("action"=>$dataArray);
     //Convert array to the formatted out put, default xml.
-    convertArrayToFormatForOutput($outputNode, ACTION);
+    convertArrayToFormatForOutput($outputNode);
 }
 //Display the new currency rate to the user and do the calulation to get value.
 function conductPutMessage($rates){
@@ -134,7 +134,7 @@ function conductPutMessage($rates){
     $dataArray = array("at"=> date('d M Y H:i', $timeStamp), "rate"=> $rate, "curr"=> $curArray);
     $outputNode = array("action"=>$dataArray);
     //Convert array to the formatted out put, default xml.
-    convertArrayToFormatForOutput($outputNode, ACTION);
+    convertArrayToFormatForOutput($outputNode);
 }
 //Display the deleted currency to the user.
 function conductDeleteCurrency($rates){
@@ -155,7 +155,7 @@ function conductDeleteCurrency($rates){
         $dataArray = array("at"=> date('d M Y H:i', $timeStamp), "code"=> CUR);
         $outputNode = array("action"=>$dataArray);
         //Convert array to the formatted out put, default xml.
-        convertArrayToFormatForOutput($outputNode, ACTION);
+        convertArrayToFormatForOutput($outputNode);
     } else {
         //Output error 2500 - Error in service
         outputErrorMessageResponse(2500); 
