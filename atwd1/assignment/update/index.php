@@ -100,7 +100,7 @@ function conductPostMessage($rates, $oldRate = null) {
     $rate = (float) $rates->xpath("/currencies/currency[@code='". CUR ."']/@rate")[0]->rate;
     //Contruct arrays with the data above
     $curArray = array("code"=> CUR, "name"=> (string) getCountryNameForCurrencyCode($countries, CUR), "loc"=> getCountryLocationForCurrencyCode($countries, CUR));
-    $dataArray = array("at"=> date('d M Y H:i', $timeStamp), "rate"=> $rate, "old_rate"=> $oldRate, "curr"=> $curArray);
+    $dataArray = array("at"=> date('d M Y H:i', $timeStamp), "rate"=> round($rate, 5), "old_rate"=> round($oldRate, 5), "curr"=> $curArray);
     $outputNode = array("action"=>$dataArray);
     //Convert array to the formatted out put, default xml.
     convertArrayToFormatForOutput($outputNode);
@@ -128,7 +128,7 @@ function conductPutMessage($rates){
     //Get timestamp from rates file.
     $timeStamp = (int) $rates->xpath("/currencies/@ts")[0];
     //Getting the currency rate from the XML data file
-    $rate = round((float) $rates->xpath("/currencies/currency[@code='". CUR ."']/@rate")[0]->rate, 2);
+    $rate = round((float) $rates->xpath("/currencies/currency[@code='". CUR ."']/@rate")[0]->rate, 5);
     //Contruct arrays with the data above
     $curArray = array("code"=> CUR, "name"=> (string) getCountryNameForCurrencyCode($countries, CUR), "loc"=> getCountryLocationForCurrencyCode($countries, CUR));
     $dataArray = array("at"=> date('d M Y H:i', $timeStamp), "rate"=> $rate, "curr"=> $curArray);
