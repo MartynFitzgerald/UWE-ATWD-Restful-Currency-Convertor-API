@@ -39,9 +39,9 @@ function arrayToXML($array, &$xmlDocument) {
     }
 }
 //This is converts the PHP array to XML or JSON depending on request  
-function convertArrayToFormatForOutput($outputNode, $format = null,$actionType = null) {
+function convertArrayToFormatForOutput($outputNode, $actionType = null) {
     //Default to XML if json isn't specified  
-    if ($format == "json") {
+    if (FORMAT == "json") {
         $outputJSON = json_encode($outputNode);
         //displayJSON($outputJSON);
 

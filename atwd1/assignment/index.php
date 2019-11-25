@@ -17,23 +17,23 @@
 require_once('config.php');
 //Functions used throught this service is located.
 require_once('functions.php');
-//Checking to see if the get methods are set
-$countryFrom = isset($_REQUEST["from"]) ? strtoupper($_REQUEST["from"]) : null;
-$countryTo = isset($_REQUEST["to"]) ? strtoupper($_REQUEST["to"]) : null;
-$amount = isset($_REQUEST["amnt"]) ? $_REQUEST["amnt"] : null;
-$format = isset($_REQUEST["format"]) ? strtolower($_REQUEST["format"]) : null;
+//Checking to see if the get methods are set and define global values
+define('FROM', isset($_REQUEST["from"]) ? strtoupper($_REQUEST["from"]) : null);
+define('TO', isset($_REQUEST["to"]) ? strtoupper($_REQUEST["to"]) : null);
+define('AMOUNT', isset($_REQUEST["amnt"]) ? $_REQUEST["amnt"] : null);
+define('FORMAT', isset($_REQUEST["format"]) ? strtolower($_REQUEST["format"]) : null);
 //If the values are null then output error message.
-if (!$countryFrom || !$countryTo || !$amount) {
+if (!FROM || !TO || !AMOUNT) {
     // maybe make a function "productParametersMissingError"
     outputErrorMessageResponse(1000);
 }
 //Check format is XML, JSON or null
-if (!in_array($format, FORMATS)) {
+if (!in_array(FORMAT, FORMATS)) {
     //Output error 1400	- Format must be xml or json
     outputErrorMessageResponse(1400);  
 } 
 //This should check to see if the value is a decimal and not a float
-checkAmountIsFloat($amount);
+checkAmountIsFloat(AMOUNT);
 //Check the parameters are the ones that are expected, error 1100 - Parameter not recognized
 checkParametersAreRecognized(PRE_DEFINED_GET_PARAMETERS_CONVERSION, 1100);
 //Setting value outside the ifstatement to allow us to access rates below the if statement.
@@ -58,32 +58,32 @@ if (!file_exists(RATES_PATH_DIRECTORY)) {
     }
 }
 //Checking currency code to the rates.xml file.
-checkCurrencyCode($rates, $countryFrom, 1200);
-checkCurrencyCode($rates, $countryTo, 1200);
+checkCurrencyCode($rates, FROM, 1200);
+checkCurrencyCode($rates, TO, 1200);
 //Request the countries information form file.
 $countries = getCountriesFromDataFile();
 //Produce conversion message to user.
-conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format);
+conductConvMessage($countries, $rates);
 //Display the currency conversion to the user and do the calulation to get value.
-function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amount, $format){
+function conductConvMessage($countries, $rates){
     //Getting the currency rate from the XML data file
-    $currencyTo = $rates->xpath("/currencies/currency[@code='". $countryTo ."']")[0];
-    $currencyFrom = $rates->xpath("/currencies/currency[@code='". $countryFrom ."']")[0];
+    $currencyTo = $rates->xpath("/currencies/currency[@code='". TO ."']")[0];
+    $currencyFrom = $rates->xpath("/currencies/currency[@code='". FROM ."']")[0];
     if ($currencyTo["isAvailable"] == 1 && $currencyFrom["isAvailable"] == 1) {
         //Set rate value
         $rate = round(((float) $currencyTo["rate"] / (float) $currencyFrom["rate"]), 2);
-        $amountFormatted = round((float) $amount, 2);
+        $amountFormatted = round((float) AMOUNT, 2);
         //Calculating the conversion.
-        $amountCalculation = round($rate * (float) $amount, 2);
+        $amountCalculation = round($rate * (float) AMOUNT, 2);
         //Getting timestamp from document
         $ts = $rates->xpath("/currencies/@ts");
         //Build the PHP array so we can convert it too xml or json.
-        $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryFrom), "loc"=> getCountryLocationForCurrencyCode($countries, $countryFrom), "amnt"=> $amountFormatted);
-        $toArray = array("code"=> $countryTo, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryTo), "loc"=> getCountryLocationForCurrencyCode($countries, $countryTo), "amnt"=> $amountCalculation);
+        $fromArray = array("code"=> FROM, "curr"=> (string) getCountryNameForCurrencyCode($countries, FROM), "loc"=> getCountryLocationForCurrencyCode($countries, FROM), "amnt"=> $amountFormatted);
+        $toArray = array("code"=> TO, "curr"=> (string) getCountryNameForCurrencyCode($countries, TO), "loc"=> getCountryLocationForCurrencyCode($countries, TO), "amnt"=> $amountCalculation);
         $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> $rate, "from"=> $fromArray, "to"=> $toArray);
         $outputNode = array("conv"=>$dataArray);
         //Convert array to format and output
-        convertArrayToFormatForOutput($outputNode, $format);
+        convertArrayToFormatForOutput($outputNode);
     }
     else
     {
