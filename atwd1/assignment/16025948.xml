@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<atwd1 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.cems.uwe.ac.uk/~p-chatterjee/2019-20/modules/atwd1/assignment/atwd1_schema.xsd"
+    code="UFCFX3-15-3" name="Advanced Topics in Web Development 1" year="2019/20">
+    <student sno="16025948" un="m4-fitzgerald" surname="Fitzgerald" prog="BSc (Hons) Computing"/>
+    <assignment>
+        <component id="A" name="Currency Service">
+            <tests>
+                <!-- 
+                 Note that you should only need to edit the '~m4-fitzgerald' value 
+                 to your own username to make these tests work for your application.
+                -->
+
+                <!-- convert 100.00 GBP to INR and return XML -->
+                <test id="1" response="xml" type="success"
+                    purpose="convert 100.00 GBP to INR and return XML">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/?from=GBP&amp;to=INR&amp;amnt=100.00&amp;format=xml </test>
+
+                <!-- convert 85.75 from USD to EUR and return JSON -->
+                <test id="2" response="json" type="success"
+                    purpose="convert 85.75 from USD to EUR and return JSON">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/?from=USD&amp;to=EUR&amp;amnt=85.75&amp;format=json </test>
+
+                <!-- redo test 1 but leave out 'format' parameter - should return XML by default -->
+                <test id="3" response="xml" type="success"
+                    purpose="redo test 1 but leave out format parameter - XML is default">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/?from=GBP&amp;to=INR&amp;amnt=100.00 </test>
+
+                <!-- error 1000: Required parameter is missing - the 'from' parameter is missing -->
+                <test id="4" response="xml" type="error 1000"
+                    purpose="Required parameter is missing - (from)">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/?to=EUR&amp;amnt=100.00&amp;format=xml</test>
+
+                <!-- error 1100: Parameter not recognized - the 'to' parameter is missing the 'o' (return json) -->
+                <test id="5" response="json" type="error 1000 or 1100"
+                    purpose="Parameter not recognized - the to parameter is misspelled (return json)"
+                    >
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/?from=USD&amp;t=EUR&amp;amnt=100.00&amp;format=json</test>
+
+                <!-- error 1200: Currency type not recognised - the 'from' value is 'YYY') -->
+                <test id="6" response="json" type="error 1200"
+                    purpose="Currency type not recognised - the from value is YYY">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/?from=YYY&amp;to=EUR&amp;amnt=18.85&amp;format=xml</test>
+
+                <!-- error 1300: Currency amount must be a decimal number - the 'amnt' value is non-decimal) -->
+                <test id="7" response="xml" type="error 1300"
+                    purpose="Currency amount must be a decimal number - the amnt value is non-decimal"
+                    >
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/?from=USD&amp;to=EUR&amp;amnt=NaN&amp;format=xml</test>
+
+                <!-- error 1400: Format must be xml or json - the 'format' value is 'ZZZ') -->
+                <test id="8" response="xml" type="error 1400"
+                    purpose="Format must be xml or json - the format value is ZZZ">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/?from=USD&amp;to=EUR&amp;amnt=19.20&amp;format=ZZZ</test>
+            </tests>
+            <data>
+                <rates_file>http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/data/rates.xml</rates_file>
+            </data>
+            <code>
+                <file type="main"
+                    >http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/docs/index.phps</file>
+                <!-- You can add uo to 5 addtional url's here -->
+                <file type="config"
+                    >http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/docs/config.phps</file>
+                <file type="functions"
+                    >http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/docs/functions.phps</file>
+            </code>
+            <comment>This was easy-peasy. Did it in my sleep.</comment>
+        </component>
+
+        <component id="B" name="Post, Put &amp; Delete implementation">
+            <tests>
+                <!-- error 2000: Action not post, put or delete - value is 'other') -->
+                <test id="9" response="xml" type="error 2000"
+                    purpose="Action not post, put or delete - value is other)">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/update/?cur=USD&amp;action=other</test>
+
+                <!-- error 2100: Currency code is missing (no value) -->
+                <test id="10" response="xml" type="error 2100"
+                    purpose="Currency code is missing (no value)">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/update/?cur=&amp;action=post</test>
+
+                <!-- error 2200: Currency code not found for update (value is ZZZ) -->
+                <test id="11" response="xml" type="error 2200"
+                    purpose="Currency code not found for update (value is ZZZ)">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/update/?cur=ZZZ&amp;action=put</test>
+
+                <!-- error 2300: No rate listed for this currency -->
+                <test id="12" response="xml" type="error 2300"
+                    purpose="No rate listed for this currency - XPT (platinum) has no rate in fixer"
+                    >
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/update/?cur=XPT&amp;action=put</test>
+
+                <!-- error 2400: Cannot update base currency (value is GBP) -->
+                <test id="14" response="xml" type="error 2400"
+                    purpose="Cannot update base currency (value is GBP)">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/update/?cur=GBP&amp;action=del</test>
+
+                <!-- Update USD -->
+                <test id="15" response="xml" type="success" purpose="Update USD">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/update/?cur=USD&amp;action=post</test>
+
+                <!-- DELETE USD -->
+                <test id="16" response="xml" type="success" purpose="DELETE USD">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/update/?cur=USD&amp;action=del</test>
+
+                <!-- test delete raise - error 1200: Currency type not recognised -->
+                <test id="17" response="xml" type="error 1200"
+                    purpose="test delete - error 1200: Currency type not recognised">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/?from=USD&amp;to=EUR&amp;amnt=18.85&amp;format=json</test>
+
+                <!-- PUT USD -->
+                <test id="18" response="xml" type="success" purpose="PUT USD">
+                    http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/update/?cur=USD&amp;action=put</test>
+            </tests>
+            <code>
+                <file type="POST, PUT, DELETE"
+                    >http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/docs/update/index.phps</file>
+                <!-- You can add more file elements here -->
+            </code>
+            <comment>Easy. Only a few lines of code. Perhaps a little thinking.</comment>
+        </component>
+
+        <component id="C" name="Form Interface">
+            <form>http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/update/form/</form>
+            <comment>A responsive form and easy code - again far too easy. Blimey, is this first
+                year stuff?</comment>
+        </component>
+
+        <component id="D" name="Critical Evaluation">
+            <eval>
+                <![CDATA[
+                     <p>Can be up to 500 words and can include HTML5 or Markdown markup</p> 
+                ]]>
+            </eval>
+        </component>
+    </assignment>
+
+</atwd1>
+<!-- ATWD1 assignment XML submission File, 2019 -->
+<!-- author: prakash.chatterjee@uwe.ac.uk -->
