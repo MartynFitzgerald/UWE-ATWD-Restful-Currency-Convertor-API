@@ -42,7 +42,7 @@ function arrayToXML($array, &$xmlDocument) {
 function convertArrayToFormatForOutput($outputNode) {
     //Default to XML if json isn't specified  
     if (FORMAT == "json") {
-        $outputJSON = json_encode($outputNode);
+        $outputJSON = json_encode($outputNode, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         //displayJSON($outputJSON);
 
         header('Content-Type: application/json');
