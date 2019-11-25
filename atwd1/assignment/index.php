@@ -71,13 +71,14 @@ function conductConvMessage($countries, $rates, $countryFrom, $countryTo, $amoun
     $currencyFrom = $rates->xpath("/currencies/currency[@code='". $countryFrom ."']")[0];
     if ($currencyTo["isAvailable"] == 1 && $currencyFrom["isAvailable"] == 1) {
         //Set rate value
-        $rate = ((float) $currencyTo["rate"] / (float) $currencyFrom["rate"]);
+        $rate = round(((float) $currencyTo["rate"] / (float) $currencyFrom["rate"]), 2);
+        $amountFormatted = round((float) $amount, 2);
         //Calculating the conversion.
-        $amountCalculation = round($rate * (float) $amount, 1);
+        $amountCalculation = round($rate * (float) $amount, 2);
         //Getting timestamp from document
         $ts = $rates->xpath("/currencies/@ts");
         //Build the PHP array so we can convert it too xml or json.
-        $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryFrom), "loc"=> getCountryLocationForCurrencyCode($countries, $countryFrom), "amnt"=> (float) $amount);
+        $fromArray = array("code"=> $countryFrom, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryFrom), "loc"=> getCountryLocationForCurrencyCode($countries, $countryFrom), "amnt"=> $amountFormatted);
         $toArray = array("code"=> $countryTo, "curr"=> (string) getCountryNameForCurrencyCode($countries, $countryTo), "loc"=> getCountryLocationForCurrencyCode($countries, $countryTo), "amnt"=> $amountCalculation);
         $dataArray = array("at"=> date('d M Y H:i', (int) $ts[0]), "rate"=> $rate, "from"=> $fromArray, "to"=> $toArray);
         $outputNode = array("conv"=>$dataArray);
