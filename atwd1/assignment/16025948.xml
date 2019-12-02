@@ -64,8 +64,12 @@
                     >http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/docs/config.phps</file>
                 <file type="functions"
                     >http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/docs/functions.phps</file>
+                <file type="error_data"
+                    >http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/data/errors.xml</file>
+                <file type="countries_data"
+                    >http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/data/countries.xml</file>
             </code>
-            <comment>This was easy-peasy. Did it in my sleep.</comment>
+            <comment>This was easy to understand but some of my time was needed to create main functionality of the program.</comment>
         </component>
 
         <component id="B" name="Post, Put &amp; Delete implementation">
@@ -118,19 +122,39 @@
                     >http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/docs/update/index.phps</file>
                 <!-- You can add more file elements here -->
             </code>
-            <comment>Easy. Only a few lines of code. Perhaps a little thinking.</comment>
+            <comment>The post, put and delete was quite hard to understand how to develop it all within one file.</comment>
         </component>
 
         <component id="C" name="Form Interface">
             <form>http://isa.cems.uwe.ac.uk/~m4-fitzgerald/atwd1/assignment/update/form/</form>
-            <comment>A responsive form and easy code - again far too easy. Blimey, is this first
-                year stuff?</comment>
+            <comment>The form was fairly easy to develop using Javascript, Jquery, Ajax, CCS3 and HTML.</comment>
         </component>
 
         <component id="D" name="Critical Evaluation">
             <eval>
                 <![CDATA[
-                     <p>Can be up to 500 words and can include HTML5 or Markdown markup</p> 
+                     <h1>What were your learning outcomes in respect to this project?</h1>
+                        <p>Within this project, one of my learning outcomes was how to develop a REST based API using PHP, JavaScript, XML & XPath that considers error handling as a priority from the initial start of the development process.  This enhanced my understanding of creating a robust application that gives users a useful error instead of having PHP’s predefined errors for developers.
+                        While constructing the client application to test the API, I used HTML5, PHP, JavaScript and CSS3 to handle the POST, PUT and DELETE methods built in the API. To make it responsive for the user the application shows all the currency codes the application accepts within a dropdown and displays the output of the user’s request to the API within a text area. 
+                        Throughout the development process of this project I used a range of web oriented software architectures such as web-oriented architecture (WOA) and design principles such as REST principles shown below.</p>
+                        <ul>
+                           <li>Resources are defined by URIs</li>
+                           <li>Resources are manipulated through their representations</li>
+                           <li>Messages are self-descriptive and stateless</li>
+                           <li>There can be multiple representations for a resource</li>
+                           <li>Application state is drive by resource manipulations</li>
+                        </ul>
+                        </p>As well as applying principles of declarative that utilizes reuse of code through both conversion and update functionality of the application, I also applied functional programming within this application this allows me to break down the functionality that gives a good understanding of the application, and also makes testing and debugging easier to carry out.</p>
+                        
+                        <h1>How might the application you have built be extended and improved?</h1>
+                        <p>To extend this application I would implement a user authentication method that would work by only allowing system administrators to use the CRUD functionality such as POST, PUT and DELETE. This would allow the system administrators to edit the currencies within the rates.xml file, making the API more secure from any attacks to the system.
+                        I believe this application could be improved by having more descriptive error messages, such as the error 1000 which displays the message “Required parameter is missing”. This message is very general and doesn’t tell the user which parameter is missing an example of an improved error message for error 1000 would be “Required parameter amnt is missing”.
+                        Another improvement I would implement would be to cut out the middleman by not using the fixer API that caps the number of requests this application does. This could be prevented if this application used another API that is free to use completely, this would also give the application more potential to scale up.</p>  
+                        
+                        <h1>How could the application and/or its components promote re-use?</h1>
+                        <p>The application could use the old rates files to construct graphs or diagrams showing how the currency rates have changed over time, this would allow the API to create more functionality for the user which would bring more users to the API.
+                        I could re-use the components within this application by taking the key functions that conducted error handling, calculations, or conversions between data types and implementing them in other applications. The application itself could be re-used to display currency conversion rates with the base rate of GBP, which would be used inside of an application with a different goal.</p> 
+
                 ]]>
             </eval>
         </component>

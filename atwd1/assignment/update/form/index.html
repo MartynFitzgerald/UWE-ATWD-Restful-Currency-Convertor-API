@@ -2,9 +2,9 @@
 <head>
   <meta charset="utf-8">
   <title>Restful Currency Convertor</title>
-  <link rel="stylesheet" href="css/styles.css">
-  <script type="text/javascript"  src="js/jquery-3.4.1.min.js"></script>
-  <script type="text/javascript"  src="js/vkbeautify.0.99.00.beta.js"></script>
+  <link rel="stylesheet" href="../../css/styles.css">
+  <script type="text/javascript"  src="../../js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript"  src="../../js/vkbeautify.0.99.00.beta.js"></script>
 </head>
 <body>
   <h1>Restful Currency Convertor</h1>
@@ -36,7 +36,7 @@
 <script>
 $.ajax({
   type: "GET",
-  url: "./data/countries.xml",
+  url: "../../data/countries.xml",
   dataType: "xml",
   success: function (xml) {
       var select = $('#cur');
@@ -63,7 +63,7 @@ $('.submit').click(function() {
   var action = document.querySelector('input[name="actions"]:checked').value;
   $.ajax({
     type: "GET",
-    url: "./update/?action=" + action + "&cur=" + currencyCode,
+    url: "../?action=" + action + "&cur=" + currencyCode,
     contentType: "text/plain",
     dataType: "text",
     success: function (data) {
